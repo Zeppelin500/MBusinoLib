@@ -14,7 +14,8 @@ Current, not the whole M-Bus protocol is implemented. But the decoding capabilit
 
 **MBusinoLib** is a fork of AllWize/mbus-payload library with more decode capabilities.
 
-Thanks to **AllWize!** https://github.com/allwize/mbus-payload 
+Thanks to **AllWize!** for the library https://github.com/allwize/mbus-payload 
+Thanks to **HWHardsoft** for the M-Bus communication at the example https://github.com/HWHardsoft/emonMbus
 
 ### Class: `MBusinoLib`
 
