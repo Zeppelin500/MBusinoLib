@@ -1,4 +1,4 @@
-# `MBusinoLib` M-Bus Decoder
+# MBusinoLib - an Arduino M-Bus Decoder
 
 [![version](https://img.shields.io/badge/version-0.1.0-brightgreen.svg)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-LGPL--3.0-orange.svg)](LICENSE)
@@ -6,15 +6,15 @@
 
 ## Documentation
 
-The `MBusinoLib` library enables Arduino devices to decode M-Bus (Meterbus) telegrams.
+The **MBusinoLib** library enables Arduino devices to decode M-Bus (Meterbus) telegrams.
 
 Current, not the whole M-Bus protocol is implemented. But the decoding capabilities still increase.
 
 ### Credits
 
-`MBusinoLib` is a fork of AllWize/mbus-payload library with more decode capabilities.
+**MBusinoLib** is a fork of AllWize/mbus-payload library with more decode capabilities.
 
-Thanks to AllWize! 
+Thanks to **AllWize!** https://github.com/allwize/mbus-payload 
 
 ### Class: `MBusinoLib`
 
