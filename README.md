@@ -1,4 +1,4 @@
-# MBusinoLib - an Arduino M-Bus Decoder
+# MBusinoLib - an Arduino M-Bus Decoder Library
 
 [![version](https://img.shields.io/badge/version-0.1.0-brightgreen.svg)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-LGPL--3.0-orange.svg)](LICENSE)
