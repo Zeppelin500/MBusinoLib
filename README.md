@@ -15,6 +15,7 @@ Current, not the whole M-Bus protocol is implemented. But the decoding capabilit
 **MBusinoLib** is a fork of AllWize/mbus-payload library with more decode capabilities.
 
 Thanks to **AllWize!** for the library https://github.com/allwize/mbus-payload 
+
 Thanks to **HWHardsoft** for the M-Bus communication at the example https://github.com/HWHardsoft/emonMbus
 
 ### Class: `MBusinoLib`
@@ -99,18 +100,32 @@ Decodes a byte array into a JsonArray (requires ArduinoJson library). The result
 uint8_t decode(uint8_t *buffer, uint8_t size, JsonArray& root);
 ```
 
-Example output:
+Example JSON output:
 
 ```
 [
   {
-    "vif": 64257,
-    "code": 0,
-    "scalar": 6,
+    "vif": 49,
+    "code": 13,
+    "scalar": 0,
     "value_raw": 200,
-    "value_scaled": 2e8
+    "value_scaled": 200.000,
+    "units": W,
+    "name": POWER_W
   }
 ]
+```
+
+Example extract the JSON
+
+```c
+      for (uint8_t i=0; i<fields; i++) {
+        double value = root[i]["value_scaled"].as<double>();
+        const char* name = root[i]["name"];
+        const char* units = root[i]["units"];
+
+        //...send or process the Values
+      }
 ```
 
 ### Method: `getCodeUnits`
