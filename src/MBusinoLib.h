@@ -28,7 +28,7 @@ along with the MBusinoLib library.  If not, see <http://www.gnu.org/licenses/>.
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-#define MBUS_DEFAULT_BUFFER_SIZE          1020
+#define MBUS_DEFAULT_BUFFER_SIZE          512
 #define ARDUINO_FLOAT_MIN                 1e-6  // Assume 0 if less than this
 #define ARDUINO_FLOAT_DECIMALS            6     // 6 decimals is just below the limit for Arduino float maths
 
