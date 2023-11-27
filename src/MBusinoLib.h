@@ -28,7 +28,7 @@ along with the MBusinoLib library.  If not, see <http://www.gnu.org/licenses/>.
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-#define MBUS_DEFAULT_BUFFER_SIZE          510
+#define MBUS_DEFAULT_BUFFER_SIZE          1020
 #define ARDUINO_FLOAT_MIN                 1e-6  // Assume 0 if less than this
 #define ARDUINO_FLOAT_DECIMALS            6     // 6 decimals is just below the limit for Arduino float maths
 
@@ -118,7 +118,7 @@ enum MBUS_CODE {
   MAX_POWER_W,
 
   // VIFE 0xFC
-  UNSUPPORTED_X,
+  CUSTOMIZED_VIF,
   
 };
 
@@ -250,7 +250,7 @@ static const vif_def_type vif_defs[MBUS_VIF_DEF_NUM] = {
   { MBUS_CODE::MAX_POWER_W             , 0xFB78   , 8,  -3},
 
   // VIFE 0xFC
-  { MBUS_CODE::UNSUPPORTED_X           , 0xFC00   , 254,  0}
+  { MBUS_CODE::CUSTOMIZED_VIF           , 0xFC00   , 254,  -5}
 
 };
 
