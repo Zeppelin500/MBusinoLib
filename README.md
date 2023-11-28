@@ -8,7 +8,7 @@
 
 The **MBusinoLib** library enables Arduino devices to decode M-Bus (Meterbus) telegrams.
 
-Current, not the whole M-Bus protocol is implemented. But the decoding capabilities still increase.
+Current, not the whole M-Bus protocol is implemented. But the decoding capabilities still increase. Most M-Bus divices should work.
 
 ### Credits
 
@@ -29,6 +29,75 @@ MBusinoLib payload(uint8_t size);
 ```
 
 - `uint8_t size`: The maximum payload size to send, e.g. `32`.
+
+## Decoding
+
+### Method: `decode`
+
+Decodes a byte array into a JsonArray (requires ArduinoJson library). The result is an array of objects, each one containing channel, type, type name and value. The value can be a scalar or an object (for accelerometer, gyroscope and GPS data). The method call returns the number of decoded fields or 0 if error.
+
+```c
+uint8_t decode(uint8_t *buffer, uint8_t size, JsonArray& root);
+```
+
+same line from the example
+```c
+uint8_t fields = payload.decode(&mbus_data[Startadd], packet_size - Startadd - 2, root); 
+```
+
+Example JSON output:
+
+```
+[
+{
+    "vif": 101,
+    "code": 21,
+    "scalar": -2,
+    "value_raw": 2206,
+    "value_scaled": 22.06,
+    "units": "C",
+    "name": "external_temperature_min"
+  },
+]
+```
+
+Example extract the JSON
+
+```c
+      for (uint8_t i=0; i<fields; i++) {
+        double value = root[i]["value_scaled"].as<double>();
+        const char* name = root[i]["name"];
+        const char* units = root[i]["units"];
+
+        //...send or process the Values
+      }
+```
+
+### Method: `getCodeUnits`
+
+Returns a pointer to a C-string with the unit abbreviation for the given code.
+
+
+```c
+const char * getCodeUnits(uint8_t code);
+```
+
+### Method: `getError`
+
+Returns the last error ID, once returned the error is reset to OK. Possible error values are:
+
+* `MBUS_ERROR::NO_ERROR`: No error
+* `MBUS_ERROR::BUFFER_OVERFLOW`: Buffer cannot hold the requested data, try increasing the buffer size. When decoding: incomming buffer size is wrong.
+* `MBUS_ERROR::UNSUPPORTED_CODING`: The library only supports 1,2,3 and 4 bytes integers and 2,4,6 or 8 BCD.
+* `MBUS_ERROR::UNSUPPORTED_RANGE`: Couldn't encode the provided combination of code and scale, try changing the scale of your value.
+* `MBUS_ERROR::UNSUPPORTED_VIF`: When decoding: the VIF is not supported and thus it cannot be decoded.
+* `MBUS_ERROR::NEGATIVE_VALUE`: Library only supports non-negative values at the moment.
+
+```c
+uint8_t getError(void);
+```
+
+## Encoding
 
 ### Example
 
@@ -90,66 +159,6 @@ Returns the final position in the buffer if OK, else returns 0.
 ```c
 uint8_t addField(uint8_t code, float value);
 uint8_t addField(uint8_t code, int8_t scalar, uint32_t value);
-```
-
-### Method: `decode`
-
-Decodes a byte array into a JsonArray (requires ArduinoJson library). The result is an array of objects, each one containing channel, type, type name and value. The value can be a scalar or an object (for accelerometer, gyroscope and GPS data). The method call returns the number of decoded fields or 0 if error.
-
-```c
-uint8_t decode(uint8_t *buffer, uint8_t size, JsonArray& root);
-```
-
-Example JSON output:
-
-```
-[
-  {
-    "vif": 49,
-    "code": 13,
-    "scalar": 0,
-    "value_raw": 200,
-    "value_scaled": 200.000,
-    "units": W,
-    "name": POWER_W
-  }
-]
-```
-
-Example extract the JSON
-
-```c
-      for (uint8_t i=0; i<fields; i++) {
-        double value = root[i]["value_scaled"].as<double>();
-        const char* name = root[i]["name"];
-        const char* units = root[i]["units"];
-
-        //...send or process the Values
-      }
-```
-
-### Method: `getCodeUnits`
-
-Returns a pointer to a C-string with the unit abbreviation for the given code.
-
-
-```c
-const char * getCodeUnits(uint8_t code);
-```
-
-### Method: `getError`
-
-Returns the last error ID, once returned the error is reset to OK. Possible error values are:
-
-* `MBUS_ERROR::NO_ERROR`: No error
-* `MBUS_ERROR::BUFFER_OVERFLOW`: Buffer cannot hold the requested data, try increasing the buffer size. When decoding: incomming buffer size is wrong.
-* `MBUS_ERROR::UNSUPPORTED_CODING`: The library only supports 1,2,3 and 4 bytes integers and 2,4,6 or 8 BCD.
-* `MBUS_ERROR::UNSUPPORTED_RANGE`: Couldn't encode the provided combination of code and scale, try changing the scale of your value.
-* `MBUS_ERROR::UNSUPPORTED_VIF`: When decoding: the VIF is not supported and thus it cannot be decoded.
-* `MBUS_ERROR::NEGATIVE_VALUE`: Library only supports non-negative values at the moment.
-
-```c
-uint8_t getError(void);
 ```
 
 ## References
