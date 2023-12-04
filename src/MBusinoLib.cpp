@@ -1,22 +1,22 @@
 /*
 
-MBusinoLib, a M-Bus decoder
+MBusinoLib, a Arduino M-Bus decoder
 
-An evulution step of the forked AllWize/mbus-payload library.
+Based at the AllWize/mbus-payload library but with much more decode capabilies.
 
 Credits to AllWize!
 
 The MBusinoLib library is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
+it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
 The MBusinoLib library is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
+GNU General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public License
+You should have received a copy of the GNU General Public License
 along with the MBusinoLib library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
@@ -59,139 +59,6 @@ uint8_t MBusinoLib::getError() {
 
 // ----------------------------------------------------------------------------
 
-uint8_t MBusinoLib::addRaw(uint8_t dif, uint32_t vif, uint32_t value) {
-
-    // Check supported codings (1 to 4 bytes o 2-8 BCD)
-    bool bcd = ((dif & 0x08) == 0x08);
-    uint8_t len = (dif & 0x07);
-    if ((len < 1) || (4 < len)) {
-      _error = MBUS_ERROR::UNSUPPORTED_CODING;
-      return 0;
-    }
-
-    // Calculate VIF(E) size
-    uint8_t vif_len = 0;
-    uint32_t vif_copy = vif;
-    while (vif_copy > 0) {
-      vif_len++;
-      vif_copy >>= 8;
-    }
-
-    // Check buffer overflow
-    if ((_cursor + 1 + vif_len + len) > _maxsize) {
-      _error = MBUS_ERROR::BUFFER_OVERFLOW;
-      return 0;
-    }
-
-    // Store DIF
-    _buffer[_cursor++] = dif;
-
-    // Store VIF
-    for (uint8_t i = 0; i<vif_len; i++) {
-      _buffer[_cursor + vif_len - i - 1] = (vif & 0xFF);
-      vif >>= 8;
-    }
-    _cursor += vif_len;
-
-    // Value Information Block - Data
-    if (bcd) {
-      for (uint8_t i = 0; i<len; i++) {
-        _buffer[_cursor++] = ((value / 10) % 10) * 16 + (value % 10);
-        value = value / 100;
-      }
-    } else {
-      for (uint8_t i = 0; i<len; i++) {
-        _buffer[_cursor++] = value & 0xFF;
-        value >>= 8;
-      }
-    }
-
-    return _cursor;
-
-}
-
-uint8_t MBusinoLib::addField(uint8_t code, int8_t scalar, uint32_t value) {
-
-  // Find the closest code-scalar match
-  uint32_t vif = _getVIF(code, scalar);
-  if (0xFF == vif) {
-    _error = MBUS_ERROR::UNSUPPORTED_RANGE;
-    return 0;
-  }
-
-  // Calculate coding length
-  uint32_t copy = value >> 8;
-  uint8_t coding = 1;
-  while (copy > 0) {
-    copy >>= 8;
-    coding++;
-  }
-  if (coding > 4) {
-    coding = 4;
-  }
-
-  // Add value
-  return addRaw(coding, vif, value);
-
-}
-
-uint8_t MBusinoLib::addField(uint8_t code, float value) {
-
-  // Does not support negative values
-  if (value < 0) {
-    _error = MBUS_ERROR::NEGATIVE_VALUE;
-    return 0;
-  }
-
-  // Special case fot value == 0
-  if (value < ARDUINO_FLOAT_MIN) {
-    return addField(code, 0, value);
-  }
-
-  // Get the size of the integer part
-  int8_t int_size = 0;
-  uint32_t tmp = value;
-  while (tmp > 10) {
-    tmp /= 10;
-    int_size++;
-  }
-
-  // Calculate scale
-  int8_t scalar = 0;
-
-  // If there is a fractional part, move up 8-int_size positions
-  float frac = value - int(value);
-  if (frac > ARDUINO_FLOAT_MIN) {
-    scalar = int_size - ARDUINO_FLOAT_DECIMALS; 
-    for (int8_t i=scalar; i<0; i++) {
-      value *= 10.0;
-    }
-  }
-
-  // Check validity when no decimals
-  bool valid = (_getVIF(code, scalar) != 0xFF);
-
-  // Now move down 
-  int32_t scaled = round(value);
-  while ((scaled % 10) == 0) {
-    scalar++;
-    scaled /= 10;
-    if (_getVIF(code, scalar) == 0xFF) {
-      if (valid) {
-        scalar--;
-        scaled *= 10;
-        break;
-      }
-    } else {
-      valid = true;
-    }
-  }
-  
-  // Convert to integer
-  return addField(code, scalar, scaled);
-
-}
-
 uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 
 	uint8_t count = 0;
@@ -204,7 +71,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     	// Decode DIF
     	uint8_t dif = buffer[index++];
     	uint8_t difLeast4bit = (dif & 0x0F);
-		uint8_t difFunctionField = ((dif & 0x30) >> 4);
+		  uint8_t difFunctionField = ((dif & 0x30) >> 4);
     	uint8_t len = 0;
     	uint8_t dataCodingType = 0;
     	/*
@@ -311,212 +178,211 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 		}
 			
 			
-    	// handle DIFE to prevent stumble if a DIFE is used
-    	bool dife = ((dif & 0x80) == 0x80); //check if the first bit of DIF marked as "DIFE is following" 
-    	while(dife) {
-      		index++;
-      		dife = false;
-      		dife = ((buffer[index-1] & 0x80) == 0x80); //check if after the DIFE another DIFE is following 
-      	} 
-    	//  End of DIFE handling
+    // handle DIFE to prevent stumble if a DIFE is used
+    bool dife = ((dif & 0x80) == 0x80); //check if the first bit of DIF marked as "DIFE is following" 
+    while(dife) {
+        index++;
+      	dife = false;
+      	dife = ((buffer[index-1] & 0x80) == 0x80); //check if after the DIFE another DIFE is following 
+    } 
+    //  End of DIFE handling
  
 
-    	// Get VIF(E)
-    	uint32_t vif = 0;
-    	do {
-      	if (index == size) {
-        	_error = MBUS_ERROR::BUFFER_OVERFLOW;
-        	return 0;
-      	}
-      	vif = (vif << 8) + buffer[index++];
-    	} while ((vif & 0x80) == 0x80);
+    // Get VIF(E)
+    uint32_t vif = 0;
+    do {
+      if (index == size) {
+        _error = MBUS_ERROR::BUFFER_OVERFLOW;
+        return 0;
+      }
+      vif = (vif << 8) + buffer[index++];
+    } while ((vif & 0x80) == 0x80);
 
-    	// Find definition
-    	int8_t def = _findDefinition(vif);
-    	if (def < 0) {
-      	_error = MBUS_ERROR::UNSUPPORTED_VIF;
-      	return 0;
-    	}
+    // Find definition
+    int8_t def = _findDefinition(vif);
+    if (def < 0) {
+      _error = MBUS_ERROR::UNSUPPORTED_VIF;
+      return 0;
+    }
     
-    	char customVIF[10] = {0}; 
+    char customVIF[10] = {0}; 
 		bool ifcustomVIF = false;	
 		
-    	if((vif & 0x6D) == 0x6D){  // TimePoint Date&Time TypF
-        	dataCodingType = 6;   
-    	}
-    	else if((vif & 0x6C) == 0x6C){  // TimePoint Date TypG
-        	dataCodingType = 7;   
-    	}
-    	else if((vif & 0xFF00) == 0xFC00){   // VIF 0xFC --> Customized VIF as ASCII
-        	uint8_t customVIFlen = (vif & 0x00FF);
-        	char vifBuffer[customVIFlen] = {0};    
-        	for (uint8_t i = 0; i<=customVIFlen; i++) {
-            	vifBuffer[i] = buffer[index]; 
+    if((vif & 0x6D) == 0x6D){  // TimePoint Date&Time TypF
+      dataCodingType = 6;   
+    }
+    else if((vif & 0x6C) == 0x6C){  // TimePoint Date TypG
+      dataCodingType = 7;   
+    }
+    else if((vif & 0xFF00) == 0xFC00){   // VIF 0xFC --> Customized VIF as ASCII
+      uint8_t customVIFlen = (vif & 0x00FF);
+      char vifBuffer[customVIFlen] = {0};    
+      for (uint8_t i = 0; i<=customVIFlen; i++) {
+        vifBuffer[i] = buffer[index]; 
 				index++;
-        	}  
-        	strncpy(customVIF, vifBuffer,customVIFlen );  
+      }  
+      strncpy(customVIF, vifBuffer,customVIFlen );  
 			ifcustomVIF = true;	
-    	} 	  
+    } 	  
 
-    	// Check buffer overflow
-    	if (index + len > size) {
-        	_error = MBUS_ERROR::BUFFER_OVERFLOW;
-        	return 0;
-    	}
+    // Check buffer overflow
+    if (index + len > size) {
+      _error = MBUS_ERROR::BUFFER_OVERFLOW;
+      return 0;
+    }
 
-    	// read value
-    	int16_t value16 = 0;  	// int16_t to notice negative values at 2 byte data
-    	int32_t value32 = 0;	// int32_t to notice negative values at 4 byte data	  
-    	int64_t value = 0;
+    // read value
+    int16_t value16 = 0;  	// int16_t to notice negative values at 2 byte data
+    int32_t value32 = 0;	// int32_t to notice negative values at 4 byte data	  
+    int64_t value = 0;
 
-    	float valueFloat = 0;
+    float valueFloat = 0;
 	  
 	  
-		uint8_t date[len] ={0};
-		char datestring[12] = {0};
-		char datestring2[24] = {0};
-		int out_len = 0;	  
+	  uint8_t date[len] ={0};
+	  char datestring[12] = {0};
+	  char datestring2[24] = {0};
+	  int out_len = 0;	  
 
-    	switch(dataCodingType){
-        	case 0:    //no Data
+    switch(dataCodingType){
+      case 0:    //no Data
             
-            	break;
-        	case 1:    //integer
-            	if(len==2){
-            	    for (uint8_t i = 0; i<len; i++) {
-            	        value16 = (value16 << 8) + buffer[index + len - i - 1];
-            	    }
-                	value = (int64_t)value16;
-            	}
-            	else if(len==4){
-                	for (uint8_t i = 0; i<len; i++) {
-                    	value32 = (value32 << 8) + buffer[index + len - i - 1];
-                	}	
-                	value = (int64_t)value32;
-            	}			
-            	else{
-                	for (uint8_t i = 0; i<len; i++) {
-                    	value = (value << 8) + buffer[index + len - i - 1];
-                   	}            
-            	}
-            	break;
-        	case 2:    //bcd
-             	if(len==2){
-                	for (uint8_t i = 0; i<len; i++) {
-                    	uint8_t byte = buffer[index + len - i - 1];
-                    	value16 = (value16 * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
-                	}
-                	value = (int64_t)value16;
-			 	}
-             	else if(len==4){
-                	for (uint8_t i = 0; i<len; i++) {
-                    	uint8_t byte = buffer[index + len - i - 1];
-                    	value32 = (value32 * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
-                	}
-                	value = (int64_t)value32;				 
-            	}
-            	else{
-                	for (uint8_t i = 0; i<len; i++) {
-                    	uint8_t byte = buffer[index + len - i - 1];
-                    	value = (value * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
-                	}           
-            	}       
-            	break;
-        	case 3:    //real
-            	for (uint8_t i = 0; i<len; i++) {
-                	value = (value << 8) + buffer[index + len - i - 1];
-            	} 
-            	memcpy(&valueFloat, &value, sizeof(valueFloat));
-            	break;
-        	case 4:    //variable lengs
+        break;
+      case 1:    //integer
+        if(len==2){
+          for (uint8_t i = 0; i<len; i++) {
+            value16 = (value16 << 8) + buffer[index + len - i - 1];
+          }
+          value = (int64_t)value16;
+        }
+        else if(len==4){
+          for (uint8_t i = 0; i<len; i++) {
+            value32 = (value32 << 8) + buffer[index + len - i - 1];
+          }	
+          value = (int64_t)value32;
+        }			
+        else{
+          for (uint8_t i = 0; i<len; i++) {
+            value = (value << 8) + buffer[index + len - i - 1];
+          }            
+        }
+        break;
+      case 2:    //bcd
+        if(len==2){
+          for (uint8_t i = 0; i<len; i++) {
+            uint8_t byte = buffer[index + len - i - 1];
+            value16 = (value16 * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
+          }
+          value = (int64_t)value16;
+			  }
+        else if(len==4){
+          for (uint8_t i = 0; i<len; i++) {
+            uint8_t byte = buffer[index + len - i - 1];
+            value32 = (value32 * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
+          }
+          value = (int64_t)value32;				 
+        }
+        else{
+          for (uint8_t i = 0; i<len; i++) {
+            uint8_t byte = buffer[index + len - i - 1];
+            value = (value * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
+          }           
+        }       
+        break;
+      case 3:    //real
+        for (uint8_t i = 0; i<len; i++) {
+          value = (value << 8) + buffer[index + len - i - 1];
+        } 
+        memcpy(&valueFloat, &value, sizeof(valueFloat));
+        break;
+      case 4:    //variable lengs
         
-            	break;
-        	case 5:    //special functions
+        break;
+      case 5:    //special functions
         
-            	break;
-        	case 6:    //TimePoint Date&Time Typ F
-
-				for (uint8_t i = 0; i<len; i++) {
-            		date[i] =  buffer[index + i];
+        break;
+      case 6:    //TimePoint Date&Time Typ F
+			  for (uint8_t i = 0; i<len; i++) {
+          date[i] =  buffer[index + i];
 				}            			
-            	if ((date[0] & 0x80) != 0) {    // Time valid ?
-                	//out_len = snprintf(output, output_size, "invalid");
-                	break;
-            	}
-            	out_len = snprintf(datestring, 24, "%02d%02d%02d%02d%02d",
-                	((date[2] & 0xE0) >> 5) | ((date[3] & 0xF0) >> 1), // year
-                	date[3] & 0x0F, // mon
-                	date[2] & 0x1F, // mday
-                	date[1] & 0x1F, // hour
-            		date[0] & 0x3F // sec
-					);  
+        if ((date[0] & 0x80) != 0) {    // Time valid ?
+          //out_len = snprintf(output, output_size, "invalid");
+          break;
+        }
+        out_len = snprintf(datestring, 24, "%02d%02d%02d%02d%02d",
+          ((date[2] & 0xE0) >> 5) | ((date[3] & 0xF0) >> 1), // year
+          date[3] & 0x0F, // mon
+          date[2] & 0x1F, // mday
+          date[1] & 0x1F, // hour
+          date[0] & 0x3F // sec
+				);  
 			
-            	out_len = snprintf(datestring2, 24, "%02d-%02d-%02dT%02d:%02d:00",
-                	((date[2] & 0xE0) >> 5) | ((date[3] & 0xF0) >> 1), // year
-                	date[3] & 0x0F, // mon
-                	date[2] & 0x1F, // mday
-                	date[1] & 0x1F, // hour
-                	date[0] & 0x3F // sec
-            	);	
+        out_len = snprintf(datestring2, 24, "%02d-%02d-%02dT%02d:%02d:00",
+          ((date[2] & 0xE0) >> 5) | ((date[3] & 0xF0) >> 1), // year
+          date[3] & 0x0F, // mon
+          date[2] & 0x1F, // mday
+          date[1] & 0x1F, // hour
+          date[0] & 0x3F // sec
+        );	
 				value = atof( datestring);
-            	break;
-        	case 7:    //TimePoint Date Typ G
+        break;
+      case 7:    //TimePoint Date Typ G
 				for (uint8_t i = 0; i<len; i++) {
-            		date[i] =  buffer[index + i];
+          date[i] =  buffer[index + i];
 				}            
 			
-           	if ((date[1] & 0x0F) > 12) {    // Time valid ?
-                //out_len = snprintf(output, output_size, "invalid");
-                break;
-            }
-            out_len = snprintf(datestring, 10, "%02d%02d%02d",
-                ((date[0] & 0xE0) >> 5) | ((date[1] & 0xF0) >> 1), // year
-                date[1] & 0x0F, // mon
-                date[0] & 0x1F  // mday
-            );
-            out_len = snprintf(datestring2, 10, "%02d-%02d-%02d",
-                ((date[0] & 0xE0) >> 5) | ((date[1] & 0xF0) >> 1), // year
-                date[1] & 0x0F, // mon
-                date[0] & 0x1F  // mday
-            );			
-			value = atof( datestring);
-            	break;
+        if ((date[1] & 0x0F) > 12) {    // Time valid ?
+          //out_len = snprintf(output, output_size, "invalid");
+          break;
+        }
+        out_len = snprintf(datestring, 10, "%02d%02d%02d",
+          ((date[0] & 0xE0) >> 5) | ((date[1] & 0xF0) >> 1), // year
+          date[1] & 0x0F, // mon
+          date[0] & 0x1F  // mday
+        );
+        out_len = snprintf(datestring2, 10, "%02d-%02d-%02d",
+          ((date[0] & 0xE0) >> 5) | ((date[1] & 0xF0) >> 1), // year
+          date[1] & 0x0F, // mon
+          date[0] & 0x1F  // mday
+        );			
+			  value = atof( datestring);
+        break;
 			default:
 				break;
-    	}
+    }
 
-    	index += len;
+    index += len;
 
-    	// scaled value
-    	double scaled = 0;
-		int8_t scalar = vif_defs[def].scalar + vif - vif_defs[def].base;	  
-    	if(dataCodingType == 3){
-        	scaled = valueFloat;
-    	}
-    	else{
-        	scaled = value;
-        	for (int8_t i=0; i<scalar; i++) scaled *= 10;
-        	for (int8_t i=scalar; i<0; i++) scaled /= 10;
-    	}
-    	// Init object
-    	JsonObject data = root.createNestedObject();
-    	data["vif"] = vif;
-    	data["code"] = vif_defs[def].code;
-    	data["scalar"] = scalar;
-    	data["value_raw"] = value;
-    	data["value_scaled"] = scaled; 
-    	if(ifcustomVIF == true){
-			data["units"] = String(customVIF);
-		}
-    	else{
-        	data["units"] = String(getCodeUnits(vif_defs[def].code));
-    	}
-    	data["name"] = String(getCodeName(vif_defs[def].code)+String(stringFunctionField));
-		// data["date"] = String(datestring2);  formatted dates, optional  
-		if(buffer[index] == 0x0F ||buffer[index] == 0x1F){ // If last byte 1F/0F --> More records follow in next telegram
-			index++;
-		}	
-  	}
+    // scaled value
+    double scaled = 0;
+	  int8_t scalar = vif_defs[def].scalar + vif - vif_defs[def].base;	  
+    if(dataCodingType == 3){
+      scaled = valueFloat;
+    }
+    else{
+      scaled = value;
+      for (int8_t i=0; i<scalar; i++) scaled *= 10;
+      for (int8_t i=scalar; i<0; i++) scaled /= 10;
+    }
+    // Init object
+    JsonObject data = root.createNestedObject();
+    data["vif"] = vif;
+    data["code"] = vif_defs[def].code;
+    data["scalar"] = scalar;
+    data["value_raw"] = value;
+    data["value_scaled"] = scaled; 
+    if(ifcustomVIF == true){
+		  data["units"] = String(customVIF);
+	  }
+    else{
+      data["units"] = String(getCodeUnits(vif_defs[def].code));
+    }
+    data["name"] = String(getCodeName(vif_defs[def].code)+String(stringFunctionField));
+	  // data["date"] = String(datestring2);  formatted dates, optional  
+	  if(buffer[index] == 0x0F ||buffer[index] == 0x1F){ // If last byte 1F/0F --> More records follow in next telegram
+		  index++;
+	  }	
+  }
 	return count;
 }
 

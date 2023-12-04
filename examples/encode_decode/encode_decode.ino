@@ -1,6 +1,6 @@
 /*
 
-This is the original example from AllWize
+This is the original example from AllWize, the MBusinoLib does not support encoding!
 
 -------------------------------------------------
 

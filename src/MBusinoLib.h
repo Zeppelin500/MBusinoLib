@@ -1,23 +1,23 @@
 /*
 
-MBusinoLib, a M-Bus decoder
+MBusinoLib, a Arduino M-Bus decoder
 
-An evulution step of the forked AllWize/mbus-payload library.
+Based at the AllWize/mbus-payload library but with much more decode capabilies.
 
 Credits to AllWize!
 
 
 The MBusinoLib library is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
+it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
 The MBusinoLib library is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
+GNU General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public License
+You should have received a copy of the GNU General Public License
 along with the MBusinoLib library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
@@ -120,18 +120,6 @@ enum MBUS_CODE {
   // VIFE 0xFC
   CUSTOMIZED_VIF,
   
-};
-
-// Supported encodings
-enum MBUS_CODING {
-  BIT_8 = 0x01,
-  BIT_16,
-  BIT_24,
-  BIT_32,
-  BCD_2 = 0x09,
-  BCD_4,
-  BCD_6,
-  BCD_8,
 };
 
 // Error codes
@@ -250,7 +238,7 @@ static const vif_def_type vif_defs[MBUS_VIF_DEF_NUM] = {
   { MBUS_CODE::MAX_POWER_W             , 0xFB78   , 8,  -3},
 
   // VIFE 0xFC
-  { MBUS_CODE::CUSTOMIZED_VIF           , 0xFC00   , 254,  -5}
+  { MBUS_CODE::CUSTOMIZED_VIF          , 0xFC00   , 254,  -5}
 
 };
 
@@ -266,10 +254,6 @@ public:
   uint8_t * getBuffer(void);
   uint8_t copy(uint8_t * buffer);
   uint8_t getError();
-
-  uint8_t addRaw(uint8_t dif, uint32_t vif, uint32_t value);
-  uint8_t addField(uint8_t code, int8_t scalar, uint32_t value);
-  uint8_t addField(uint8_t code, float value);
   
   uint8_t decode(uint8_t *buffer, uint8_t size, JsonArray& root);
   const char * getCodeName(uint8_t code);
