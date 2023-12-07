@@ -10,7 +10,7 @@ The **MBusinoLib** library enables Arduino devices to decode M-Bus (Meterbus) te
 
 Current, not the whole M-Bus protocol is implemented. But the decoding capabilities still increase. Most M-Bus divices should work.
 
-Tested at ESPs and Arduino MKR boards.
+Tested at ESPs, Arduino MKR and Uno R4.
 
 ### Credits
 
