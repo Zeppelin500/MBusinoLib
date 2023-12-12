@@ -8,7 +8,7 @@
 
 The **MBusinoLib** library enables Arduino devices to decode M-Bus (Meterbus) telegrams.
 
-Most M-Bus divices should be supported.
+Most M-Bus devices should be supported.
 
 Tested at ESPs, Arduino MKR and Uno R4.
 
