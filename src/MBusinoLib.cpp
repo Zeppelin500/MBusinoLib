@@ -236,120 +236,185 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     int32_t value32 = 0;	// int32_t to notice negative values at 4 byte data	  
     int64_t value = 0;
 
-    float valueFloat = 0;
+    float valueFloat = 0; //real value
 	  
 	  
 	  uint8_t date[len] ={0};
-	  char datestring[12] = {0};
-	  char datestring2[24] = {0};
-	  int out_len = 0;	  
+	  char datestring[12] = {0}; //needed for simple formatted dates 
+	  char datestring2[24] = {0};//needed for extensive formatted dates
+	  int out_len = 0;	
+    char valueString [12] = {0}; // contain the ASCII value at variable length ascii values and formatted dates
+    bool switchAgain = false; // repeat the switch(dataCodingType) at variable length coding
+    bool negative = false;  // set a negative flag for negate the value
+    uint8_t asciiValue = 0; // 0 = double, 1 = ASCII, 2 = both;
 
-    switch(dataCodingType){
-      case 0:    //no Data
-            
-        break;
-      case 1:    //integer
-        if(len==2){
-          for (uint8_t i = 0; i<len; i++) {
-            value16 = (value16 << 8) + buffer[index + len - i - 1];
+    do{
+      switchAgain = false;
+      switch(dataCodingType){
+        case 0:    //no Data
+              
+          break;
+        case 1:    //integer
+          if(len==2){
+            for (uint8_t i = 0; i<len; i++) {
+              value16 = (value16 << 8) + buffer[index + len - i - 1];
+            }
+            value = (int64_t)value16;
           }
-          value = (int64_t)value16;
-        }
-        else if(len==4){
-          for (uint8_t i = 0; i<len; i++) {
-            value32 = (value32 << 8) + buffer[index + len - i - 1];
-          }	
-          value = (int64_t)value32;
-        }			
-        else{
+          else if(len==4){
+            for (uint8_t i = 0; i<len; i++) {
+              value32 = (value32 << 8) + buffer[index + len - i - 1];
+            }	
+            value = (int64_t)value32;
+          }			
+          else{
+            for (uint8_t i = 0; i<len; i++) {
+              value = (value << 8) + buffer[index + len - i - 1];
+            }            
+          }
+          break;
+        case 2:    //bcd
+          if(len==2){
+            for (uint8_t i = 0; i<len; i++) {
+              uint8_t byte = buffer[index + len - i - 1];
+              value16 = (value16 * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
+            }
+            value = (int64_t)value16;
+          }
+          else if(len==4){
+            for (uint8_t i = 0; i<len; i++) {
+              uint8_t byte = buffer[index + len - i - 1];
+              value32 = (value32 * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
+            }
+            value = (int64_t)value32;				 
+          }
+          else{
+            for (uint8_t i = 0; i<len; i++) {
+              uint8_t byte = buffer[index + len - i - 1];
+              value = (value * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
+            }           
+          } 
+          if(negative == true){
+            value = value * -1;
+          }    
+          break;
+        case 3:    //real
           for (uint8_t i = 0; i<len; i++) {
             value = (value << 8) + buffer[index + len - i - 1];
+          } 
+          memcpy(&valueFloat, &value, sizeof(valueFloat));
+          break;
+        case 4:    //variable lengs
+          /*
+          Variable Length:
+          With data field = `1101b` several data types with variable length can be used. The length of
+          the data is given with the first byte of data, which is here called LVAR.
+          LVAR = 00h .. BFh :ASCII string with LVAR characters
+          LVAR = C0h .. CFh :positive BCD number with (LVAR - C0h) • 2 digits
+          LVAR = D0h .. DFH :negative BCD number with (LVAR - D0h) • 2 digits
+          LVAR = E0h .. EFh :binary number with (LVAR - E0h) bytes
+          LVAR = F0h .. FAh :floating point number with (LVAR - F0h) bytes [to bedefined]
+          LVAR = FBh .. FFh :Reserved
+          */
+          // only ASCII string supported
+          if(buffer[index] >= 0x00 || buffer[index] <= 0xBF){ //ASCII string with LVAR characters
+            len = buffer[index];
+            index ++;
+            char charBuffer[len] = {0};        
+            for (uint8_t i = 0; i<=len; i++) { // evtl das "=" löschen
+              charBuffer[i] = buffer[index + (len-i-1)]; 
+            }  
+            strncpy(valueString, charBuffer,len );  
+            asciiValue = 1;	
+          }
+          else if(buffer[index] >= 0xC0 && buffer[index] <= 0xCF){ //positive BCD number with (LVAR - C0h) • 2 digits
+            len = buffer[index] - 0xC0;
+            index ++;
+            dataCodingType = 2;
+            switchAgain = true;
+            break;
+          }
+          else if(buffer[index] >= 0xD0 && buffer[index] <= 0xDF){ //negative BCD number with (LVAR - D0h) • 2 digits
+            len = buffer[index] - 0xD0;
+            index ++;
+            dataCodingType = 2;
+            switchAgain = true;
+            negative = true;
+            break;
+          }    
+          else if(buffer[index] >= 0xE0 && buffer[index] <= 0xEF){ //binary number with (LVAR - E0h) bytes
+            len = buffer[index] - 0xE0;
+            index ++;            
+            dataCodingType = 1;
+            switchAgain = true;
+            break;
+          }    
+          else if(buffer[index] >= 0xF0 && buffer[index] <= 0xFA){ //floating point number with (LVAR - F0h) bytes [to bedefined]
+            len = buffer[index] - 0xF0;
+            index ++;            
+            dataCodingType = 3;
+            switchAgain = true;
+            break;
+          } 
+
+          break;
+        case 5:    //special functions
+          
+          break;
+        case 6:    //TimePoint Date&Time Typ F
+          for (uint8_t i = 0; i<len; i++) {
+            date[i] =  buffer[index + i];
+          }            			
+          if ((date[0] & 0x80) != 0) {    // Time valid ?
+            //out_len = snprintf(output, output_size, "invalid");
+            break;
+          }
+          out_len = snprintf(datestring, 24, "%02d%02d%02d%02d%02d",
+            ((date[2] & 0xE0) >> 5) | ((date[3] & 0xF0) >> 1), // year
+            date[3] & 0x0F, // mon
+            date[2] & 0x1F, // mday
+            date[1] & 0x1F, // hour
+            date[0] & 0x3F // sec
+          );  
+        
+          out_len = snprintf(datestring2, 24, "%02d-%02d-%02dT%02d:%02d:00",
+            ((date[2] & 0xE0) >> 5) | ((date[3] & 0xF0) >> 1), // year
+            date[3] & 0x0F, // mon
+            date[2] & 0x1F, // mday
+            date[1] & 0x1F, // hour
+            date[0] & 0x3F // sec
+          );	
+          value = atof( datestring);
+          strcpy(valueString, datestring2);
+          asciiValue = 2;	
+          break;
+        case 7:    //TimePoint Date Typ G
+          for (uint8_t i = 0; i<len; i++) {
+            date[i] =  buffer[index + i];
           }            
-        }
-        break;
-      case 2:    //bcd
-        if(len==2){
-          for (uint8_t i = 0; i<len; i++) {
-            uint8_t byte = buffer[index + len - i - 1];
-            value16 = (value16 * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
-          }
-          value = (int64_t)value16;
-			  }
-        else if(len==4){
-          for (uint8_t i = 0; i<len; i++) {
-            uint8_t byte = buffer[index + len - i - 1];
-            value32 = (value32 * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
-          }
-          value = (int64_t)value32;				 
-        }
-        else{
-          for (uint8_t i = 0; i<len; i++) {
-            uint8_t byte = buffer[index + len - i - 1];
-            value = (value * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
-          }           
-        }       
-        break;
-      case 3:    //real
-        for (uint8_t i = 0; i<len; i++) {
-          value = (value << 8) + buffer[index + len - i - 1];
-        } 
-        memcpy(&valueFloat, &value, sizeof(valueFloat));
-        break;
-      case 4:    //variable lengs
         
-        break;
-      case 5:    //special functions
-        
-        break;
-      case 6:    //TimePoint Date&Time Typ F
-			  for (uint8_t i = 0; i<len; i++) {
-          date[i] =  buffer[index + i];
-				}            			
-        if ((date[0] & 0x80) != 0) {    // Time valid ?
-          //out_len = snprintf(output, output_size, "invalid");
+          if ((date[1] & 0x0F) > 12) {    // Time valid ?
+            //out_len = snprintf(output, output_size, "invalid");
+            break;
+          }
+          out_len = snprintf(datestring, 10, "%02d%02d%02d",
+            ((date[0] & 0xE0) >> 5) | ((date[1] & 0xF0) >> 1), // year
+            date[1] & 0x0F, // mon
+            date[0] & 0x1F  // mday
+          );
+          out_len = snprintf(datestring2, 10, "%02d-%02d-%02d",
+            ((date[0] & 0xE0) >> 5) | ((date[1] & 0xF0) >> 1), // year
+            date[1] & 0x0F, // mon
+            date[0] & 0x1F  // mday
+          );			
+          value = atof( datestring);
+          strcpy(valueString, datestring2);
+          asciiValue = 2;	
           break;
-        }
-        out_len = snprintf(datestring, 24, "%02d%02d%02d%02d%02d",
-          ((date[2] & 0xE0) >> 5) | ((date[3] & 0xF0) >> 1), // year
-          date[3] & 0x0F, // mon
-          date[2] & 0x1F, // mday
-          date[1] & 0x1F, // hour
-          date[0] & 0x3F // sec
-				);  
-			
-        out_len = snprintf(datestring2, 24, "%02d-%02d-%02dT%02d:%02d:00",
-          ((date[2] & 0xE0) >> 5) | ((date[3] & 0xF0) >> 1), // year
-          date[3] & 0x0F, // mon
-          date[2] & 0x1F, // mday
-          date[1] & 0x1F, // hour
-          date[0] & 0x3F // sec
-        );	
-				value = atof( datestring);
-        break;
-      case 7:    //TimePoint Date Typ G
-				for (uint8_t i = 0; i<len; i++) {
-          date[i] =  buffer[index + i];
-				}            
-			
-        if ((date[1] & 0x0F) > 12) {    // Time valid ?
-          //out_len = snprintf(output, output_size, "invalid");
+        default:
           break;
-        }
-        out_len = snprintf(datestring, 10, "%02d%02d%02d",
-          ((date[0] & 0xE0) >> 5) | ((date[1] & 0xF0) >> 1), // year
-          date[1] & 0x0F, // mon
-          date[0] & 0x1F  // mday
-        );
-        out_len = snprintf(datestring2, 10, "%02d-%02d-%02d",
-          ((date[0] & 0xE0) >> 5) | ((date[1] & 0xF0) >> 1), // year
-          date[1] & 0x0F, // mon
-          date[0] & 0x1F  // mday
-        );			
-			  value = atof( datestring);
-        break;
-			default:
-				break;
-    }
+      }
+    }while (switchAgain == true);
 
     index += len;
 
@@ -364,13 +429,20 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
       for (int8_t i=0; i<scalar; i++) scaled *= 10;
       for (int8_t i=scalar; i<0; i++) scaled /= 10;
     }
+    
     // Init object
     JsonObject data = root.createNestedObject();
     data["vif"] = vif;
     data["code"] = vif_defs[def].code;
-    data["scalar"] = scalar;
-    data["value_raw"] = value;
-    data["value_scaled"] = scaled; 
+    data["ascii"] = asciiValue; //0 = double, 1 = ASCII, 2 = both;
+    if(asciiValue != 1){
+      data["scalar"] = scalar;
+      data["value_raw"] = value;
+      data["value_scaled"] = scaled; 
+    }
+    if(asciiValue > 0){
+      data["value_string"] = String(valueString); 
+    }
     if(ifcustomVIF == true){
 		  data["units"] = String(customVIF);
 	  }
@@ -378,7 +450,6 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
       data["units"] = String(getCodeUnits(vif_defs[def].code));
     }
     data["name"] = String(getCodeName(vif_defs[def].code)+String(stringFunctionField));
-	  // data["date"] = String(datestring2);  formatted dates, optional  
 	  if(buffer[index] == 0x0F ||buffer[index] == 0x1F){ // If last byte 1F/0F --> More records follow in next telegram
 		  index++;
 	  }	

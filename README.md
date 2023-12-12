@@ -1,6 +1,6 @@
 # MBusinoLib - an Arduino M-Bus Decoder Library
 
-[![version](https://img.shields.io/badge/version-0.3.0-brightgreen.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.4.0-brightgreen.svg)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](LICENSE)
 
 
@@ -8,9 +8,9 @@
 
 The **MBusinoLib** library enables Arduino devices to decode M-Bus (Meterbus) telegrams.
 
-Current, not the whole M-Bus protocol is implemented. But the decoding capabilities still increase. Most M-Bus divices should work.
+Most M-Bus divices should be supported.
 
-Tested at ESPs and Arduino MKR boards.
+Tested at ESPs,Arduino MKR and Ono v4 boards.
 
 ### Credits
 
@@ -55,6 +55,7 @@ Example JSON output:
     "vif": 101,
     "code": 21,
     "scalar": -2,
+    "ascii": 0,   
     "value_raw": 2206,
     "value_scaled": 22.06,
     "units": "C",
@@ -67,9 +68,12 @@ Example extract the JSON
 
 ```c
       for (uint8_t i=0; i<fields; i++) {
-        double value = root[i]["value_scaled"].as<double>();
+        uint8_t code = root[i]["code"].as<int>();
         const char* name = root[i]["name"];
-        const char* units = root[i]["units"];
+        const char* units = root[i]["units"];           
+        uint8_t ascii = root[i]["ascii"].as<int>(); //0 = double, 1 = ASCII, 2 = both; 
+        double value = root[i]["value_scaled"].as<double>(); 
+        const char* valueString = root[i]["value_string"];   
 
         //...send or process the Values
       }

@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.4.0] - 2023-12-12
+
+### Added
+
+- support for variable length values included ASCII values
+
 ## [0.3.0] - 2023-12-04
 
 ### Changed
@@ -13,7 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- support for customized ASCII VIF 0hFC  
+- support for customized ASCII VIF 0hFC 
 
 ### Changed
 
