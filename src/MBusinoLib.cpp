@@ -179,12 +179,34 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 			
 			
     // handle DIFE to prevent stumble if a DIFE is used
-    bool dife = ((dif & 0x80) == 0x80); //check if the first bit of DIF marked as "DIFE is following" 
-    while(dife) {
+    uint16_t storageNumber = 0;
+    if((dif & 0x40) == 0x40){
+      storageNumber = 1;
+    }
+    uint8_t difeNumber = 0;
+    uint8_t dife[10] = {0};
+    bool ifDife = ((dif & 0x80) == 0x80); //check if the first bit of DIF marked as "DIFE is following" 
+    while(ifDife) {        
+        difeNumber ++;
+        dife[difeNumber] = buffer[index];
+      	ifDife = false;
+      	ifDife = ((buffer[index] & 0x80) == 0x80); //check if after the DIFE another DIFE is following 
         index++;
-      	dife = false;
-      	dife = ((buffer[index-1] & 0x80) == 0x80); //check if after the DIFE another DIFE is following 
     } 
+    uint8_t subUnit = 0;
+    uint8_t tariff = 0;
+    
+    for(uint8_t i = 0; difeNumber > 0 && i<=difeNumber; i++){    
+      if(i==0){
+        storageNumber = storageNumber | ((dife[i+1] & 0x0F) << 1);
+      }
+      else{
+        storageNumber = storageNumber | ((dife[i+1] & 0x0F) << (4*i));
+      }
+      subUnit = subUnit | (((dife[i+1] & 0x40) >> 6) << i);
+      tariff = tariff | (((dife[i+1] & 0x30) >> 4) << (2*i));
+    }
+    
     //  End of DIFE handling
  
 
@@ -242,7 +264,6 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 	  uint8_t date[len] ={0};
 	  char datestring[12] = {0}; //needed for simple formatted dates 
 	  char datestring2[24] = {0};//needed for extensive formatted dates
-	  int out_len = 0;	
     char valueString [12] = {0}; // contain the ASCII value at variable length ascii values and formatted dates
     bool switchAgain = false; // repeat the switch(dataCodingType) at variable length coding
     bool negative = false;  // set a negative flag for negate the value
@@ -369,20 +390,20 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
             //out_len = snprintf(output, output_size, "invalid");
             break;
           }
-          out_len = snprintf(datestring, 24, "%02d%02d%02d%02d%02d",
+          snprintf(datestring, 24, "%02d%02d%02d%02d%02d",
             ((date[2] & 0xE0) >> 5) | ((date[3] & 0xF0) >> 1), // year
             date[3] & 0x0F, // mon
             date[2] & 0x1F, // mday
             date[1] & 0x1F, // hour
-            date[0] & 0x3F // sec
+            date[0] & 0x3F // min
           );  
         
-          out_len = snprintf(datestring2, 24, "%02d-%02d-%02dT%02d:%02d:00",
+          snprintf(datestring2, 24, "%02d-%02d-%02dT%02d:%02d",
             ((date[2] & 0xE0) >> 5) | ((date[3] & 0xF0) >> 1), // year
             date[3] & 0x0F, // mon
             date[2] & 0x1F, // mday
             date[1] & 0x1F, // hour
-            date[0] & 0x3F // sec
+            date[0] & 0x3F // min
           );	
           value = atof( datestring);
           strcpy(valueString, datestring2);
@@ -397,12 +418,12 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
             //out_len = snprintf(output, output_size, "invalid");
             break;
           }
-          out_len = snprintf(datestring, 10, "%02d%02d%02d",
+          snprintf(datestring, 10, "%02d%02d%02d",
             ((date[0] & 0xE0) >> 5) | ((date[1] & 0xF0) >> 1), // year
             date[1] & 0x0F, // mon
             date[0] & 0x1F  // mday
           );
-          out_len = snprintf(datestring2, 10, "%02d-%02d-%02d",
+          snprintf(datestring2, 10, "%02d-%02d-%02d",
             ((date[0] & 0xE0) >> 5) | ((date[1] & 0xF0) >> 1), // year
             date[1] & 0x0F, // mon
             date[0] & 0x1F  // mday
@@ -432,24 +453,40 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     
     // Init object
     JsonObject data = root.createNestedObject();
-    data["vif"] = vif;
-    data["code"] = vif_defs[def].code;
-    data["ascii"] = asciiValue; //0 = double, 1 = ASCII, 2 = both;
-    if(asciiValue != 1){
-      data["scalar"] = scalar;
-      data["value_raw"] = value;
+    //data["vif"] = String("0x" + String(vif,HEX));
+    //data["code"] = vif_defs[def].code;
+
+    if(asciiValue != 1){ //0 = double, 1 = ASCII, 2 = both;
+      //data["scalar"] = scalar;
+      //data["value_raw"] = value;
       data["value_scaled"] = scaled; 
     }
-    if(asciiValue > 0){
+    if(asciiValue > 0){ //0 = double, 1 = ASCII, 2 = both;
       data["value_string"] = String(valueString); 
     }
     if(ifcustomVIF == true){
 		  data["units"] = String(customVIF);
 	  }
-    else{
+    else if(getCodeUnits(vif_defs[def].code)!=0){
       data["units"] = String(getCodeUnits(vif_defs[def].code));
     }
     data["name"] = String(getCodeName(vif_defs[def].code)+String(stringFunctionField));
+    if(subUnit > 0){
+      data["subUnit"] = subUnit;
+    }
+    if(storageNumber > 0){
+      data["storage"] = storageNumber;
+    }
+    if(tariff > 0){
+      data["tariff"] = tariff;
+    }    
+    /* // only for debug
+    data["difes"] = difeNumber;
+    if(difeNumber > 0){
+      data["dife1"] = dife[1];
+      data["dife2"] = dife[2];
+    }
+    */
 	  if(buffer[index] == 0x0F ||buffer[index] == 0x1F){ // If last byte 1F/0F --> More records follow in next telegram
 		  index++;
 	  }	
@@ -569,7 +606,7 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
 
   }
 
-  return "";
+  return 0;
 
 }
 

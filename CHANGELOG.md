@@ -3,6 +3,16 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.5.0] - 2023-12-12
+
+### Added
+
+- support sub unit, tariff and storage number
+
+### Changed
+
+- send only important and existing values to the json to save storage
+
 ## [0.4.0] - 2023-12-12
 
 ### Added

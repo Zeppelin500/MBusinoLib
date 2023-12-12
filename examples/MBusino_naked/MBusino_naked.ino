@@ -1,8 +1,9 @@
 /*
-# MBusino_naked --> only M-Bus capabilities
+# MBusino_naked --> only M-Bus 
 
+21 October 2023: new code based at MBusino with payload library. You find the old "Sensostar only" code in archive.
 
-documentation see Zeppelin500/MBusino
+documentation see MBusino
 
 ## Licence
 ****************************************************
@@ -19,6 +20,7 @@ You should have received a copy of the GNU General Public License along with thi
 
 #include <MBusinoLib.h>  // Library for decode M-Bus
 #include "ArduinoJson.h"
+#include <EEPROM.h>
 
 #define MBUSINO_NAME "MBusino" // If you have more MBusinos, rename it inside quote marks, or it cause some network and MQTT problems. Also you cant reach your MBusino from Arduino IDE
 
@@ -54,6 +56,11 @@ unsigned long timerMbus = 0;
 void mbus_request_data(byte address);
 void mbus_short_frame(byte address, byte C_field);
 bool mbus_get_response(byte *pdata, unsigned char len_pdata);
+void calibrationAverage();
+void calibrationSensor(uint8_t sensor);
+void calibrationValue(float value);
+void calibrationBME();
+void calibrationSet0();
 
 void setup() {
   Serial.begin(2400, SERIAL_8E1);
@@ -69,7 +76,7 @@ void setup() {
 // This function is called once everything is connected (Wifi and MQTT)
 // WARNING : YOU MUST IMPLEMENT IT IF YOU USE EspMQTTClient
 void onConnectionEstablished() {  // send a message to MQTT broker if connected.
-  client.publish(MBUSINO_NAME"/start", "bin hoch gefahren, WLAN und MQTT steht ");  
+  client.publish(MBUSINO_NAME"/start", "bin hoch gefahren, WLAN und MQTT seht ");  
 }
 
 void loop() {
@@ -77,7 +84,7 @@ void loop() {
   loop_start = millis();
 
 
-  if ((loop_start-last_loop)>= MbusInterval || firstrun) { // 9800 = ~10 seconds
+  if ((loop_start-last_loop)>= MbusInterval || firstrun) { 
     last_loop = loop_start; firstrun = false;
 
     bool mbus_good_frame = false;
@@ -106,17 +113,27 @@ void loop() {
 
 
       for (uint8_t i=0; i<fields; i++) {
-        double value = root[i]["value_scaled"].as<double>();
         uint8_t code = root[i]["code"].as<int>();
         const char* name = root[i]["name"];
-        const char* units = root[i]["units"];
+        const char* units = root[i]["units"];           
+        double value = root[i]["value_scaled"].as<double>(); 
+        const char* valueString = root[i]["value_string"];            
 
-        //two messages per value
-        client.publish(String(MBUSINO_NAME"/MBus/"+String(i+1)+"_"+String(name)), String(value,3).c_str());
+        //two messages per value, values comes as number or as ASCII string or both
+        client.publish(String(MBUSINO_NAME"/MBus/"+String(i+1)+"_vs_"+String(name)), valueString); // send the value if a ascii value is aviable (variable length)
+        client.publish(String(MBUSINO_NAME"/MBus/"+String(i+1)+"_"+String(name)), String(value,3).c_str()); // send the value if a real value is aviable (standard)
         client.publish(String(MBUSINO_NAME"/MBus/"+String(i+1)+"_"+String(name)+"_unit"), units);
         //or only one message
         //client.publish(String(MBUSINO_NAME"/MBus/"+String(i+1)+"_"+String(name)+"_in_"+String(units)), String(value,3).c_str());
-    
+
+
+        if (i == 3){  // Sensostar Bugfix --> comment it out if you use not a Sensostar
+          float flow = root[5]["value_scaled"].as<float>();
+          float delta = root[9]["value_scaled"].as<float>();
+          float calc_power = delta * flow * 1163;          
+          client.publish(MBUSINO_NAME"/MBus/4_power_calc", String(calc_power).c_str());           
+        }  
+      
       }
   
     } 

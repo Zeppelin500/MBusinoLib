@@ -1,6 +1,6 @@
 # MBusinoLib - an Arduino M-Bus Decoder Library
 
-[![version](https://img.shields.io/badge/version-0.4.0-brightgreen.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.5.0-brightgreen.svg)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](LICENSE)
 
 
@@ -52,11 +52,6 @@ Example JSON output:
 ```
 [
 {
-    "vif": 101,
-    "code": 21,
-    "scalar": -2,
-    "ascii": 0,   
-    "value_raw": 2206,
     "value_scaled": 22.06,
     "units": "C",
     "name": "external_temperature_min"
@@ -68,10 +63,8 @@ Example extract the JSON
 
 ```c
       for (uint8_t i=0; i<fields; i++) {
-        uint8_t code = root[i]["code"].as<int>();
         const char* name = root[i]["name"];
         const char* units = root[i]["units"];           
-        uint8_t ascii = root[i]["ascii"].as<int>(); //0 = double, 1 = ASCII, 2 = both; 
         double value = root[i]["value_scaled"].as<double>(); 
         const char* valueString = root[i]["value_string"];   
 
