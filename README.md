@@ -1,6 +1,6 @@
 # MBusinoLib - an Arduino M-Bus Decoder Library
 
-[![version](https://img.shields.io/badge/version-0.5.0-brightgreen.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.5.2-brightgreen.svg)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](LICENSE)
 
 
@@ -30,7 +30,7 @@ Include and instantiate the MBusinoLib class. The constructor takes the size of 
 MBusinoLib payload(uint8_t size);
 ```
 
-- `uint8_t size`: The maximum payload size to send, e.g. `512`.
+- `uint8_t size`: The maximum payload size to send, e.g. `512`
 
 ## Decoding
 
@@ -71,6 +71,23 @@ Example extract the JSON
         //...send or process the Values
       }
 ```
+### possible contained records
+only contained records will be sended
+
+* **["value_scaled"]** contains the value of the record as 32 bit real
+* **["value_string"]** contains the value of the record as ASCII string (only for Time/Dates and special variable lengs values)
+* **["units"]** contains the unit of the value as ASCII string
+* **["name"]** contains the name of the value as ASCII String incl. the information of the funktion field (min, max, err or nothing for instantaneous)
+* **["subUnit"]** countains the transmitted sub Unit
+* **["storage"]** countains the transmitted storage number
+* **["tariff"]** countains the transmitted tariff
+
+There are more records available but you have to delete the out comment in the library.
+
+* **["vif"]** contains the VIF(E) as HEX in a string.
+* **["code"]** contains the library internal code of the VIF
+* **["scalar"]** contains the scalar of the value
+* **["value_raw"]** contains the row value
 
 ### Method: `getCodeUnits`
 
