@@ -77,8 +77,8 @@ only contained records will be sended
 * **["value_scaled"]** contains the value of the record as 32 bit real
 * **["value_string"]** contains the value of the record as ASCII string (only for Time/Dates and special variable lengs values)
 * **["units"]** contains the unit of the value as ASCII string
-* **["name"]** contains the name of the value as ASCII String incl. the information of the funktion field (min, max, err or nothing for instantaneous)
-* **["subUnit"]** countains the transmitted sub Unit
+* **["name"]** contains the name of the value as ASCII string incl. the information of the function field (min, max, err or nothing for instantaneous)
+* **["subUnit"]** countains the transmitted sub unit
 * **["storage"]** countains the transmitted storage number
 * **["tariff"]** countains the transmitted tariff
 
@@ -89,14 +89,6 @@ There are more records available but you have to delete the out comment in the l
 * **["scalar"]** contains the scalar of the value
 * **["value_raw"]** contains the row value
 
-### Method: `getCodeUnits`
-
-Returns a pointer to a C-string with the unit abbreviation for the given code.
-
-
-```c
-const char * getCodeUnits(uint8_t code);
-```
 
 ### Method: `getError`
 
