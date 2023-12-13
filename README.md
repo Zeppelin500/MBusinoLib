@@ -36,7 +36,7 @@ MBusinoLib payload(uint8_t size);
 
 ### Method: `decode`
 
-Decodes a byte array into a JsonArray (requires ArduinoJson library). The result is an array of objects, each one containing channel, type, type name and value. The value can be a scalar or an object (for accelerometer, gyroscope and GPS data). The method call returns the number of decoded fields or 0 if error.
+Decodes payload of a whole M-Bus telegram as byte array into a JsonArray (requires ArduinoJson library). The result is an array of objects. The method call returns the number of decoded fields or 0 if error.
 
 ```c
 uint8_t decode(uint8_t *buffer, uint8_t size, JsonArray& root);
