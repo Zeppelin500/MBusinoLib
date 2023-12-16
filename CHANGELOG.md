@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.5.3] - 2023-12-16
+
+### Solved
+
+- compilation problems at Windows machines
+
 ## [0.5.2] - 2023-12-13
 
 ### Changed

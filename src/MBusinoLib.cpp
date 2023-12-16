@@ -238,7 +238,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     }
     else if((vif & 0xFF00) == 0xFC00){   // VIF 0xFC --> Customized VIF as ASCII
       uint8_t customVIFlen = (vif & 0x00FF);
-      char vifBuffer[customVIFlen] = {0};    
+      char vifBuffer[customVIFlen];// = {0};    
       for (uint8_t i = 0; i<=customVIFlen; i++) {
         vifBuffer[i] = buffer[index]; 
 				index++;
@@ -261,7 +261,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     float valueFloat = 0; //real value
 	  
 	  
-	  uint8_t date[len] ={0};
+	  uint8_t date[len]; // ={0};
 	  char datestring[12] = {0}; //needed for simple formatted dates 
 	  char datestring2[24] = {0};//needed for extensive formatted dates
     char valueString [12] = {0}; // contain the ASCII value at variable length ascii values and formatted dates
@@ -341,7 +341,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
           if(buffer[index] >= 0x00 || buffer[index] <= 0xBF){ //ASCII string with LVAR characters
             len = buffer[index];
             index ++;
-            char charBuffer[len] = {0};        
+            char charBuffer[len]; // = {0};        
             for (uint8_t i = 0; i<=len; i++) { // evtl das "=" löschen
               charBuffer[i] = buffer[index + (len-i-1)]; 
             }  
