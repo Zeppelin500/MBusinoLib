@@ -74,7 +74,7 @@ Example extract the JSON
 ### possible contained records
 only contained records will be sended
 
-* **["value_scaled"]** contains the value of the record as 32 bit real
+* **["value_scaled"]** contains the value of the record as 64 bit real
 * **["value_string"]** contains the value of the record as ASCII string (only for Time/Dates and special variable lengs values)
 * **["units"]** contains the unit of the value as ASCII string
 * **["name"]** contains the name of the value as ASCII string incl. the information of the function field (min, max, err or nothing for instantaneous)
