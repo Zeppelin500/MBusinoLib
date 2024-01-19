@@ -3,6 +3,13 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.6.0] - 2024-12-19
+
+### Added
+
+- support of "Codes for Value Information Field Extension (VIFE)" other then 0xFB,0xFC and 0xFD. Only to prevent stumbling, not all Units are implemented 
+ 
+
 ## [0.5.3] - 2023-12-16
 
 ### Solved

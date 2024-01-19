@@ -84,7 +84,7 @@ enum MBUS_CODE {
   HARDWARE_VERSION,
   FIRMWARE_VERSION,
   SOFTWARE_VERSION,
-  //CUSTOMER_LOCATION,
+  CUSTOMER_LOCATION,
   CUSTOMER,
   //ACCESS_CODE_USER,
   //ACCESS_CODE_OPERATOR,
@@ -134,7 +134,7 @@ enum MBUS_ERROR {
 
 // VIF codes
 
-#define MBUS_VIF_DEF_NUM                  77
+#define MBUS_VIF_DEF_NUM                  78
 
 typedef struct {
   uint8_t code;
@@ -197,7 +197,7 @@ static const vif_def_type vif_defs[MBUS_VIF_DEF_NUM] = {
   { MBUS_CODE::HARDWARE_VERSION        , 0xFD0D   ,  1,   0},
   { MBUS_CODE::FIRMWARE_VERSION        , 0xFD0E   ,  1,   0},
   { MBUS_CODE::SOFTWARE_VERSION        , 0xFD0F   ,  1,   0},  //neu
-  //{ MBUS_CODE::CUSTOMER_LOCATION       , 0xFD10   ,  1,   0},
+  { MBUS_CODE::CUSTOMER_LOCATION       , 0xFD10   ,  1,   0},
   { MBUS_CODE::CUSTOMER                , 0xFD11   ,  1,   0},
   //{ MBUS_CODE::ACCESS_CODE_USER        , 0xFD12   ,  1,   0},
   //{ MBUS_CODE::ACCESS_CODE_OPERATOR    , 0xFD13   ,  1,   0},

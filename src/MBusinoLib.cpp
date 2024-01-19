@@ -212,13 +212,21 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 
     // Get VIF(E)
     uint32_t vif = 0;
+    uint8_t vifarray[4] = {0};
+    uint8_t vifcounter = 0;
     do {
       if (index == size) {
         _error = MBUS_ERROR::BUFFER_OVERFLOW;
         return 0;
       }
+      vifarray[vifcounter] = buffer[index];
+      vifcounter++;
       vif = (vif << 8) + buffer[index++];
     } while ((vif & 0x80) == 0x80);
+
+    if(((vifarray[0] & 0x80) == 0x80) && (vifarray[1] != 0x00 ) && (vifarray[0] != 0XFD) && (vifarray[0] != 0XFC)&& (vifarray[0] != 0XFB)){
+      vif = (vifarray[0] & 0x7F);
+    }
 
     // Find definition
     int8_t def = _findDefinition(vif);
@@ -450,6 +458,10 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
       for (int8_t i=0; i<scalar; i++) scaled *= 10;
       for (int8_t i=scalar; i<0; i++) scaled /= 10;
     }
+
+    if(vifarray[1] == 0x7D){ // from table "Codes for Value Information Field Extension" E111 1101	Multiplicative correction factor: 1000
+      scaled = scaled * 1000;
+    }
     
     // Init object
     JsonObject data = root.createNestedObject();
@@ -490,6 +502,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 	  if(buffer[index] == 0x0F ||buffer[index] == 0x1F){ // If last byte 1F/0F --> More records follow in next telegram
 		  index++;
 	  }	
+    yield();        
   }
 	return count;
 }
@@ -507,7 +520,7 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
       return "m3";
 
     case MBUS_CODE::MASS_KG: 
-      return "s";
+      return "kg";
 
     case MBUS_CODE::ON_TIME_S: 
     case MBUS_CODE::OPERATING_TIME_S: 
@@ -729,6 +742,9 @@ const char * MBusinoLib::getCodeName(uint8_t code) {
 
     case MBUS_CODE::SOFTWARE_VERSION: 
       return "software_version"; //neu
+
+    case MBUS_CODE::CUSTOMER_LOCATION: 
+      return "customer_location"; //neu      
 
     case MBUS_CODE::CUSTOMER: 
       return "customer";
