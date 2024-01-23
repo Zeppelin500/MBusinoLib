@@ -246,7 +246,7 @@ class MBusinoLib {
 
 public:
 
-  MBusinoLib(uint8_t size = MBUS_DEFAULT_BUFFER_SIZE);
+  MBusinoLib(uint16_t size = MBUS_DEFAULT_BUFFER_SIZE);
   ~MBusinoLib();
 
   void reset(void);
