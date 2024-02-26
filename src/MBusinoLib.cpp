@@ -1,6 +1,6 @@
 /*
 
-MBusinoLib, a Arduino M-Bus decoder
+MBusinoLib, an Arduino M-Bus decoder
 
 Based at the AllWize/mbus-payload library but with much more decode capabilies.
 
