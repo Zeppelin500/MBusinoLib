@@ -578,10 +578,10 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
       return "bar";
 
     case MBUS_CODE::TIME_POINT_DATE:
-      return "Date_JJMMDD";  
+      return "Date_YYMMDD";  
 
     case MBUS_CODE::TIME_POINT_DATETIME:
-      return "Time_JJMMDDhhmm";  
+      return "Time_YYMMDDhhmm";  
 
     case MBUS_CODE::BAUDRATE_BPS:
       return "bps";

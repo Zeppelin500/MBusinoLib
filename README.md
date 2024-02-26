@@ -1,6 +1,6 @@
 # MBusinoLib - an Arduino M-Bus Decoder Library
 
-[![version](https://img.shields.io/badge/version-0.6.1-brightgreen.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.7.0-brightgreen.svg)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](LICENSE)
 
 
@@ -18,7 +18,7 @@ Tested at ESPs, Arduino MKR and Uno R4.
 
 Thanks to **AllWize!** for the origin library https://github.com/allwize/mbus-payload 
 
-Thanks to **HWHardsoft** for the M-Bus communication at the example https://github.com/HWHardsoft/emonMbus
+Thanks to **HWHardsoft** and **TrystanLea** for the M-Bus communication for MBusino: https://github.com/HWHardsoft/emonMbus and https://github.com/openenergymonitor/HeatpumpMonitor
 
 ### Class: `MBusinoLib`
 
