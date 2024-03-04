@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.0] - 2024-03-24
+
+### Changed
+
+- changed some units to home-assistant compatible units
+
 ## [0.7.1] - 2024-02-26
 
 ### Changed

@@ -270,9 +270,9 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 	  
 	  
 	  uint8_t date[len]; // ={0};
-	  char datestring[12] = {0}; //needed for simple formatted dates 
-	  char datestring2[24] = {0};//needed for extensive formatted dates
-    char valueString [12] = {0}; // contain the ASCII value at variable length ascii values and formatted dates
+	  char datestring[16] = {0}; //needed for simple formatted dates 
+	  char datestring2[30] = {0};//needed for extensive formatted dates
+    char valueString [30] = {0}; // contain the ASCII value at variable length ascii values and formatted dates
     bool switchAgain = false; // repeat the switch(dataCodingType) at variable length coding
     bool negative = false;  // set a negative flag for negate the value
     uint8_t asciiValue = 0; // 0 = double, 1 = ASCII, 2 = both;
@@ -398,7 +398,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
             //out_len = snprintf(output, output_size, "invalid");
             break;
           }
-          snprintf(datestring, 24, "%02d%02d%02d%02d%02d",
+          snprintf(datestring, 24, "20%02d%02d%02d%02d%02d",
             ((date[2] & 0xE0) >> 5) | ((date[3] & 0xF0) >> 1), // year
             date[3] & 0x0F, // mon
             date[2] & 0x1F, // mday
@@ -406,7 +406,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
             date[0] & 0x3F // min
           );  
         
-          snprintf(datestring2, 24, "%02d-%02d-%02dT%02d:%02d",
+          snprintf(datestring2, 24, "20%02d-%02d-%02d %02d:%02d:00",
             ((date[2] & 0xE0) >> 5) | ((date[3] & 0xF0) >> 1), // year
             date[3] & 0x0F, // mon
             date[2] & 0x1F, // mday
@@ -426,12 +426,12 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
             //out_len = snprintf(output, output_size, "invalid");
             break;
           }
-          snprintf(datestring, 10, "%02d%02d%02d",
+          snprintf(datestring, 12, "20%02d%02d%02d",
             ((date[0] & 0xE0) >> 5) | ((date[1] & 0xF0) >> 1), // year
             date[1] & 0x0F, // mon
             date[0] & 0x1F  // mday
           );
-          snprintf(datestring2, 10, "%02d-%02d-%02d",
+          snprintf(datestring2, 12, "20%02d-%02d-%02d",
             ((date[0] & 0xE0) >> 5) | ((date[1] & 0xF0) >> 1), // year
             date[1] & 0x0F, // mon
             date[0] & 0x1F  // mday
@@ -517,7 +517,7 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
       return "J";
 
     case MBUS_CODE::VOLUME_M3: 
-      return "m3";
+      return "m³";
 
     case MBUS_CODE::MASS_KG: 
       return "kg";
@@ -544,7 +544,7 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
     case MBUS_CODE::OPERATING_TIME_DAYS: 
     case MBUS_CODE::AVG_DURATION_DAYS:
     case MBUS_CODE::ACTUAL_DURATION_DAYS:
-      return "days";
+      return "d";
       
     case MBUS_CODE::POWER_W:
     case MBUS_CODE::MAX_POWER_W: 
@@ -554,13 +554,13 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
       return "J/h";
       
     case MBUS_CODE::VOLUME_FLOW_M3_H: 
-      return "m3/h";
+      return "m³/h";
       
     case MBUS_CODE::VOLUME_FLOW_M3_MIN:
-      return "m3/min";
+      return "m³/min";
       
     case MBUS_CODE::VOLUME_FLOW_M3_S: 
-      return "m3/s";
+      return "m³/s";
       
     case MBUS_CODE::MASS_FLOW_KG_H: 
       return "kg/h";
@@ -569,7 +569,7 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
     case MBUS_CODE::RETURN_TEMPERATURE_C: 
     case MBUS_CODE::EXTERNAL_TEMPERATURE_C: 
     case MBUS_CODE::TEMPERATURE_LIMIT_C:
-      return "C";
+      return "°C";
 
     case MBUS_CODE::TEMPERATURE_DIFF_K: 
       return "K";
@@ -578,13 +578,13 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
       return "bar";
 
     case MBUS_CODE::TIME_POINT_DATE:
-      return "Date_YYMMDD";  
+      return "YYYYMMDD";  
 
     case MBUS_CODE::TIME_POINT_DATETIME:
-      return "Time_YYMMDDhhmm";  
+      return "YYYYMMDDhhmm";  
 
     case MBUS_CODE::BAUDRATE_BPS:
-      return "bps";
+      return "bit/s";
 
     case MBUS_CODE::VOLTS: 
       return "V";
@@ -593,7 +593,7 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
       return "A";
       
     case MBUS_CODE::VOLUME_FT3:
-      return "ft3";
+      return "ft³";
 
     case MBUS_CODE::VOLUME_GAL: 
       return "gal";
@@ -609,7 +609,7 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
     case MBUS_CODE::TEMPERATURE_DIFF_F:
     case MBUS_CODE::EXTERNAL_TEMPERATURE_F:
     case MBUS_CODE::TEMPERATURE_LIMIT_F:
-      return "F";
+      return "°F";
 
     case MBUS_CODE::CUSTOMIZED_VIF:
       return "X";      
