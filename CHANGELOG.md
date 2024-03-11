@@ -3,7 +3,13 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.8.0] - 2024-03-24
+## [0.9.0] - 2024-03-11
+
+### Added
+
+- Added getStateClass() and getDeviceClass() for home assistant
+
+## [0.8.0] - 2024-03-04
 
 ### Changed
 

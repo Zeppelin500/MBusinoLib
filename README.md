@@ -1,6 +1,6 @@
 # MBusinoLib - an Arduino M-Bus Decoder Library
 
-[![version](https://img.shields.io/badge/version-0.8.0-brightgreen.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.9.0-brightgreen.svg)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](LICENSE)
 
 
@@ -74,6 +74,7 @@ Example extract the JSON
 ### possible contained records
 only contained records will be sended
 
+* **["code"]** contains the library internal code of the VIF
 * **["value_scaled"]** contains the value of the record as 64 bit real
 * **["value_string"]** contains the value of the record as ASCII string (only for Time/Dates and special variable lengs values)
 * **["units"]** contains the unit of the value as ASCII string
@@ -85,9 +86,8 @@ only contained records will be sended
 There are more records available but you have to delete the out comment in the library.
 
 * **["vif"]** contains the VIF(E) as HEX in a string.
-* **["code"]** contains the library internal code of the VIF
 * **["scalar"]** contains the scalar of the value
-* **["value_raw"]** contains the row value
+* **["value_raw"]** contains the raw value
 
 
 ### Method: `getError`
@@ -103,6 +103,20 @@ Returns the last error ID, once returned the error is reset to OK. Possible erro
 
 ```c
 uint8_t getError(void);
+```
+
+
+### Home Assistant
+
+The returned units are Home Assistant compatible. 
+There are two methods to get the right device- and state-classes for use as Home Assistant sensor.
+
+```c
+const char* getStateClass(uint8_t code);
+```
+
+```c
+const char* getStateClass(uint8_t code);
 ```
 
 

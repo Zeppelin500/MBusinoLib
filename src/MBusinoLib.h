@@ -258,6 +258,8 @@ public:
   uint8_t decode(uint8_t *buffer, uint8_t size, JsonArray& root);
   const char * getCodeName(uint8_t code);
   const char * getCodeUnits(uint8_t code);
+  const char * getDeviceClass(uint8_t code);
+  const char * getStateClass(uint8_t code);
   
 protected:
 
