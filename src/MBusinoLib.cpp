@@ -545,6 +545,8 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
     case MBUS_CODE::AVG_DURATION_DAYS:
     case MBUS_CODE::ACTUAL_DURATION_DAYS:
       return "d";
+
+
       
     case MBUS_CODE::POWER_W:
     case MBUS_CODE::MAX_POWER_W: 
@@ -612,7 +614,10 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
       return "°F";
 
     case MBUS_CODE::CUSTOMIZED_VIF:
-      return "X";      
+      return "X";  
+
+    case MBUS_CODE::STORAGE_INTERVAL_MONTH:     
+      return "month"; 
 
     default:
       break; 
@@ -731,6 +736,9 @@ const char * MBusinoLib::getCodeName(uint8_t code) {
     case MBUS_CODE::MANUFACTURER: 
       return "manufacturer";
 
+    case MBUS_CODE::PARAMETER_SET_ID: 
+      return "set_id";
+
     case MBUS_CODE::MODEL_VERSION: 
       return "model_version";
 
@@ -766,7 +774,13 @@ const char * MBusinoLib::getCodeName(uint8_t code) {
   
     case MBUS_CODE::RETRY: 
       return "retry";
-  
+
+     case MBUS_CODE::SIZE_OF_STORAGE_BLOCK: 
+      return "sizeof_storageblock";
+
+     case MBUS_CODE::STORAGE_INTERVAL_MONTH: 
+      return "storage_interval";
+ 
     case MBUS_CODE::GENERIC: 
       return "generic";
   
@@ -867,6 +881,7 @@ const char * MBusinoLib::getDeviceClass(uint8_t code) {
     case MBUS_CODE::DEBIT: 
     case MBUS_CODE::ACCESS_NUMBER: 
     case MBUS_CODE::MANUFACTURER: 
+    case MBUS_CODE::PARAMETER_SET_ID:
     case MBUS_CODE::MODEL_VERSION: 
     case MBUS_CODE::HARDWARE_VERSION: 
     case MBUS_CODE::FIRMWARE_VERSION: 
@@ -879,6 +894,8 @@ const char * MBusinoLib::getDeviceClass(uint8_t code) {
     case MBUS_CODE::DIGITAL_INPUT: 
     case MBUS_CODE::RESPONSE_DELAY_TIME: 
     case MBUS_CODE::RETRY:   
+    case MBUS_CODE::SIZE_OF_STORAGE_BLOCK:  
+    case MBUS_CODE::STORAGE_INTERVAL_MONTH: 
     case MBUS_CODE::GENERIC: 
     case MBUS_CODE::RESET_COUNTER: 
     case MBUS_CODE::CUMULATION_COUNTER: 
@@ -948,7 +965,8 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::CREDIT: 
     case MBUS_CODE::DEBIT: 
     case MBUS_CODE::ACCESS_NUMBER: 
-    case MBUS_CODE::MANUFACTURER: 
+    case MBUS_CODE::MANUFACTURER:
+    case MBUS_CODE::PARAMETER_SET_ID: 
     case MBUS_CODE::MODEL_VERSION: 
     case MBUS_CODE::HARDWARE_VERSION: 
     case MBUS_CODE::FIRMWARE_VERSION: 
@@ -960,7 +978,9 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::DIGITAL_OUTPUT: 
     case MBUS_CODE::DIGITAL_INPUT: 
     case MBUS_CODE::RESPONSE_DELAY_TIME: 
-    case MBUS_CODE::RETRY:   
+    case MBUS_CODE::RETRY: 
+    case MBUS_CODE::SIZE_OF_STORAGE_BLOCK: 
+    case MBUS_CODE::STORAGE_INTERVAL_MONTH:  
     case MBUS_CODE::GENERIC: 
     case MBUS_CODE::RESET_COUNTER: 
     case MBUS_CODE::CUMULATION_COUNTER: 

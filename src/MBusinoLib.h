@@ -79,7 +79,7 @@ enum MBUS_CODE {
   ACCESS_NUMBER,
   //MEDIUM,
   MANUFACTURER,
-  //PARAMETER_SET_ID,
+  PARAMETER_SET_ID,
   MODEL_VERSION,
   HARDWARE_VERSION,
   FIRMWARE_VERSION,
@@ -98,6 +98,8 @@ enum MBUS_CODE {
   BAUDRATE_BPS,
   RESPONSE_DELAY_TIME,
   RETRY,
+  SIZE_OF_STORAGE_BLOCK,
+  STORAGE_INTERVAL_MONTH,
   GENERIC,
   VOLTS, 
   AMPERES, 
@@ -134,7 +136,7 @@ enum MBUS_ERROR {
 
 // VIF codes
 
-#define MBUS_VIF_DEF_NUM                  78
+#define MBUS_VIF_DEF_NUM                  81
 
 typedef struct {
   uint8_t code;
@@ -192,7 +194,7 @@ static const vif_def_type vif_defs[MBUS_VIF_DEF_NUM] = {
   { MBUS_CODE::ACCESS_NUMBER           , 0xFD08   ,  1,   0},
   //{ MBUS_CODE::MEDIUM                  , 0xFD09   ,  1,   0},
   { MBUS_CODE::MANUFACTURER            , 0xFD0A   ,  1,   0},
-  //{ MBUS_CODE::PARAMETER_SET_ID        , 0xFD0B   ,  1,   0},
+  { MBUS_CODE::PARAMETER_SET_ID        , 0xFD0B   ,  1,   0},
   { MBUS_CODE::MODEL_VERSION           , 0xFD0C   ,  1,   0},
   { MBUS_CODE::HARDWARE_VERSION        , 0xFD0D   ,  1,   0},
   { MBUS_CODE::FIRMWARE_VERSION        , 0xFD0E   ,  1,   0},
@@ -211,6 +213,8 @@ static const vif_def_type vif_defs[MBUS_VIF_DEF_NUM] = {
   { MBUS_CODE::BAUDRATE_BPS            , 0xFD1C   ,  1,   0},
   { MBUS_CODE::RESPONSE_DELAY_TIME     , 0xFD1D   ,  1,   0},
   { MBUS_CODE::RETRY                   , 0xFD1E   ,  1,   0},
+  { MBUS_CODE::SIZE_OF_STORAGE_BLOCK   , 0xFD22   ,  1,   0},
+  { MBUS_CODE::STORAGE_INTERVAL_MONTH  , 0xFD28   ,  1,   0},
   { MBUS_CODE::GENERIC                 , 0xFD3A   ,  1,   0},
   { MBUS_CODE::VOLTS                   , 0xFD40   , 16,  -9},
   { MBUS_CODE::AMPERES                 , 0xFD50   , 16, -12},
