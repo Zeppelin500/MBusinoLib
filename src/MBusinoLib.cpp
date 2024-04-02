@@ -224,7 +224,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
       vif = (vif << 8) + buffer[index++];
     } while ((vif & 0x80) == 0x80);
 
-    if(((vifarray[0] & 0x80) == 0x80) && (vifarray[1] != 0x00 ) && (vifarray[0] != 0XFD) && (vifarray[0] != 0XFC)&& (vifarray[0] != 0XFB)){
+    if(((vifarray[0] & 0x80) == 0x80) && (vifarray[1] != 0x00 ) && (vifarray[0] != 0XFD) && (vifarray[0] != 0XFC)&& (vifarray[0] != 0XFB) && (vifarray[0] != 0XFF)){
       vif = (vifarray[0] & 0x7F);
     }
 
@@ -453,6 +453,9 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     if(dataCodingType == 3){
       scaled = valueFloat;
     }
+    if(vifarray[0]==0xFF){
+      scaled = value;  
+    }
     else{
       scaled = value;
       for (int8_t i=0; i<scalar; i++) scaled *= 10;
@@ -613,8 +616,9 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
     case MBUS_CODE::TEMPERATURE_LIMIT_F:
       return "°F";
 
-    case MBUS_CODE::CUSTOMIZED_VIF:
-      return "X";  
+//    case MBUS_CODE::CUSTOMIZED_VIF:
+//    case MBUS_CODE::MANUFACTURER_SPECIFIC:
+//      return "X";  
 
     case MBUS_CODE::STORAGE_INTERVAL_MONTH:     
       return "month"; 
@@ -789,7 +793,10 @@ const char * MBusinoLib::getCodeName(uint8_t code) {
       return "counter";
 
     case MBUS_CODE::CUSTOMIZED_VIF: 
-      return "customized_vif";  
+      return "customized_vif"; 
+
+    case MBUS_CODE::MANUFACTURER_SPECIFIC: 
+        return "manufactur_specific";
     default:
         break; 
 
@@ -900,6 +907,7 @@ const char * MBusinoLib::getDeviceClass(uint8_t code) {
     case MBUS_CODE::RESET_COUNTER: 
     case MBUS_CODE::CUMULATION_COUNTER: 
     case MBUS_CODE::CUSTOMIZED_VIF: 
+    case MBUS_CODE::MANUFACTURER_SPECIFIC: 
       return "";  
     default:
         break;
@@ -984,7 +992,8 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::GENERIC: 
     case MBUS_CODE::RESET_COUNTER: 
     case MBUS_CODE::CUMULATION_COUNTER: 
-    case MBUS_CODE::CUSTOMIZED_VIF: 
+    case MBUS_CODE::CUSTOMIZED_VIF:
+    case MBUS_CODE::MANUFACTURER_SPECIFIC:  
       return "total";
     default:
         break;

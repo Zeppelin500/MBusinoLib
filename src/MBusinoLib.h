@@ -121,6 +121,9 @@ enum MBUS_CODE {
 
   // VIFE 0xFC
   CUSTOMIZED_VIF,
+
+  // VIFE 0xFF
+  MANUFACTURER_SPECIFIC,
   
 };
 
@@ -136,7 +139,7 @@ enum MBUS_ERROR {
 
 // VIF codes
 
-#define MBUS_VIF_DEF_NUM                  81
+#define MBUS_VIF_DEF_NUM                  82
 
 typedef struct {
   uint8_t code;
@@ -242,7 +245,10 @@ static const vif_def_type vif_defs[MBUS_VIF_DEF_NUM] = {
   { MBUS_CODE::MAX_POWER_W             , 0xFB78   , 8,  -3},
 
   // VIFE 0xFC
-  { MBUS_CODE::CUSTOMIZED_VIF          , 0xFC00   , 254,  -5}
+  { MBUS_CODE::CUSTOMIZED_VIF          , 0xFC00   , 254,  -5},
+
+  // VIFE 0xFF
+  { MBUS_CODE::MANUFACTURER_SPECIFIC   , 0xFF00   , 254,  0}
 
 };
 
