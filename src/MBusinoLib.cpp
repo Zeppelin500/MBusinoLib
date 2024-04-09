@@ -453,7 +453,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     if(dataCodingType == 3){
       scaled = valueFloat;
     }
-    if(vifarray[0]==0xFF){
+    else if(vifarray[0]==0xFF){
       scaled = value;  
     }
     else{
