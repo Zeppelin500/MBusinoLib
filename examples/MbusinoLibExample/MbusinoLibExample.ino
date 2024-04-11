@@ -49,7 +49,7 @@ void loop() {
       uint8_t code = root[i]["code"].as<int>();
       const char* name = root[i]["name"];
       const char* units = root[i]["units"];           
-      double value = root[i]["value_scaled"].as<double>(); 
+      float value = root[i]["value_scaled"].as<float>(); 
       const char* valueString = root[i]["value_string"];            
 
       //values comes as number or as ASCII string or both

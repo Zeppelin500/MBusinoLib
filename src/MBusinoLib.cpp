@@ -219,13 +219,19 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
         _error = MBUS_ERROR::BUFFER_OVERFLOW;
         return 0;
       }
-      vifarray[vifcounter] = buffer[index];
+      vifarray[vifcounter] = buffer[index++];
+      if(vifcounter < 2){   // only vif and first vife will be stored
+        vif = (vif << 8) + vifarray[vifcounter];
+      }
       vifcounter++;
-      vif = (vif << 8) + buffer[index++];
-    } while ((vif & 0x80) == 0x80);
+    } while ((vifarray[vifcounter-1] & 0x80) == 0x80);
 
     if(((vifarray[0] & 0x80) == 0x80) && (vifarray[1] != 0x00 ) && (vifarray[0] != 0XFD) && (vifarray[0] != 0XFC)&& (vifarray[0] != 0XFB) && (vifarray[0] != 0XFF)){
       vif = (vifarray[0] & 0x7F);
+    }
+
+    if((vifarray[1] & 0x80) == 0x80){ // set se first bit of first VIFE from 1 to 0 to find the right def
+        vif = (vif & 0xFF7F);
     }
 
     // Find definition
@@ -449,9 +455,13 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 
     // scaled value
     double scaled = 0;
-	  int8_t scalar = vif_defs[def].scalar + vif - vif_defs[def].base;	  
+	int8_t scalar = vif_defs[def].scalar + vif - vif_defs[def].base;	  
     if(dataCodingType == 3){
       scaled = valueFloat;
+      if(vifarray[0] != 0xFF){  
+        for (int8_t i=0; i<scalar; i++) scaled *= 10;
+        for (int8_t i=scalar; i<0; i++) scaled /= 10;
+      }
     }
     else if(vifarray[0]==0xFF){
       scaled = value;  
@@ -503,9 +513,8 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     }
     */
 	  if(buffer[index] == 0x0F ||buffer[index] == 0x1F){ // If last byte 1F/0F --> More records follow in next telegram
-		  index++;
-	  }	
-    yield();        
+          break;
+	  }	       
   }
 	return count;
 }
