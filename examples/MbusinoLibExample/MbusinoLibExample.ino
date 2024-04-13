@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License along with thi
 #include <MBusinoLib.h>  // Library for decode M-Bus
 #include <ArduinoJson.h>
 
-int Startadd = 0x13;  // Start address for decoding
+#define START_ADDRESS 0x13  // Start address for decoding
 unsigned long timerMbus = 0;
 
 void setup() {
@@ -35,7 +35,7 @@ void loop() {
     MBusinoLib payload(254);  
     JsonDocument jsonBuffer;
     JsonArray root = jsonBuffer.add<JsonArray>();  
-    uint8_t fields = payload.decode(&mbus_data[Startadd], packet_size - Startadd - 2, root); 
+    uint8_t fields = payload.decode(&mbus_data[START_ADDRESS], packet_size - START_ADDRESS - 2, root); 
     char jsonstring[2048] = { 0 };
     uint8_t address = mbus_data[5]; 
     serializeJson(root, jsonstring);
@@ -66,10 +66,3 @@ void loop() {
     Serial.println("###################### end of message ###################### ");      
   }
 }
-
-
-
-
- 
-
-
