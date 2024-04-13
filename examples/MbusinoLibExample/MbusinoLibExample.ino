@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along with thi
 */
 
 #include <MBusinoLib.h>  // Library for decode M-Bus
-#include <ArduinoJson.h>
+#include <ArduinoJson.h> // is used to transfer the decoded recordings
 
 #define START_ADDRESS 0x13  // Start address for decoding
 unsigned long timerMbus = 0;
