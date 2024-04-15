@@ -238,7 +238,8 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     int8_t def = _findDefinition(vif);
     if (def < 0) {
       _error = MBUS_ERROR::UNSUPPORTED_VIF;
-      return 0;
+      def = 0; 
+      //return 0;
     }
     
     char customVIF[10] = {0}; 
@@ -455,7 +456,10 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 
     // scaled value
     double scaled = 0;
-	int8_t scalar = vif_defs[def].scalar + vif - vif_defs[def].base;	  
+    int8_t scalar = 0;	
+    if(def != 0){ // with unknown vif (def 0) we cant set the scalar
+      scalar = vif_defs[def].scalar + vif - vif_defs[def].base;
+    } 
     if(dataCodingType == 3){
       scaled = valueFloat;
       if(vifarray[0] != 0xFF){  
@@ -632,6 +636,9 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
     case MBUS_CODE::STORAGE_INTERVAL_MONTH:     
       return "month"; 
 
+    case MBUS_CODE::RELATIVE_HUMIDITY:
+      return "%";
+
     default:
       break; 
 
@@ -643,6 +650,9 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
 
 const char * MBusinoLib::getCodeName(uint8_t code) {
   switch (code) {
+
+    case MBUS_CODE::UNKNOWN_VIF:
+      return "unknown_vif";
 
     case MBUS_CODE::ENERGY_WH:
     case MBUS_CODE::ENERGY_J:
@@ -806,6 +816,10 @@ const char * MBusinoLib::getCodeName(uint8_t code) {
 
     case MBUS_CODE::MANUFACTURER_SPECIFIC: 
         return "manufactur_specific";
+
+    case MBUS_CODE::RELATIVE_HUMIDITY:
+      return "humidity";
+
     default:
         break; 
 
@@ -890,7 +904,11 @@ const char * MBusinoLib::getDeviceClass(uint8_t code) {
 
     case MBUS_CODE::AMPERES: 
       return "current";
-      
+
+    case MBUS_CODE::RELATIVE_HUMIDITY:
+      return "humidity";
+
+    case MBUS_CODE::UNKNOWN_VIF:
     case MBUS_CODE::FABRICATION_NUMBER: 
     case MBUS_CODE::BUS_ADDRESS: 
     case MBUS_CODE::CREDIT: 
@@ -954,8 +972,10 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::PRESSURE_BAR: 
     case MBUS_CODE::BAUDRATE_BPS:
     case MBUS_CODE::VOLTS: 
+    case MBUS_CODE::RELATIVE_HUMIDITY:
       return "measurement";
-    
+
+    case MBUS_CODE::UNKNOWN_VIF:    
     case MBUS_CODE::VOLUME_M3: 
     case MBUS_CODE::VOLUME_FT3:
     case MBUS_CODE::VOLUME_GAL: 

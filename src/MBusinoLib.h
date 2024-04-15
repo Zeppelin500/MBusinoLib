@@ -34,6 +34,8 @@ along with the MBusinoLib library.  If not, see <http://www.gnu.org/licenses/>.
 
 // Supported code types
 enum MBUS_CODE {
+  //unknown
+  UNKNOWN_VIF,
 
   // no VIFE
   ENERGY_WH, 
@@ -107,6 +109,7 @@ enum MBUS_CODE {
   CUMULATION_COUNTER,
 
   // VIFE 0xFB
+  RELATIVE_HUMIDITY,  
   VOLUME_FT3,
   VOLUME_GAL, 
   VOLUME_FLOW_GAL_M, 
@@ -139,7 +142,7 @@ enum MBUS_ERROR {
 
 // VIF codes
 
-#define MBUS_VIF_DEF_NUM                  82
+#define MBUS_VIF_DEF_NUM                  84
 
 typedef struct {
   uint8_t code;
@@ -149,6 +152,8 @@ typedef struct {
 } vif_def_type;
 
 static const vif_def_type vif_defs[MBUS_VIF_DEF_NUM] = {
+  // unknown VIF as user hint. 
+  { MBUS_CODE::UNKNOWN_VIF             , 0x7E     , 1,   0}, //0x7E is not used in direction Slave --> Master and therefore misused as library failure hint.
 
   // No VIFE
   { MBUS_CODE::ENERGY_WH               , 0x00     , 8,  -3},
@@ -229,6 +234,8 @@ static const vif_def_type vif_defs[MBUS_VIF_DEF_NUM] = {
   { MBUS_CODE::ENERGY_J                , 0xFB08   , 2,   8},
   { MBUS_CODE::VOLUME_M3               , 0xFB10   , 2,   2},
   { MBUS_CODE::MASS_KG                 , 0xFB18   , 2,   5},
+  { MBUS_CODE::RELATIVE_HUMIDITY       , 0xFB1A   , 2,  -1},
+
   { MBUS_CODE::VOLUME_FT3              , 0xFB21   , 1,  -1},
   { MBUS_CODE::VOLUME_GAL              , 0xFB22   , 2,  -1},
   { MBUS_CODE::VOLUME_FLOW_GAL_M       , 0xFB24   , 1,  -3},
