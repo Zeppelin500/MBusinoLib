@@ -3,6 +3,17 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.4] - 2024-04-15
+
+### Added
+
+- vif FB1A rel humidity 
+
+### Changed
+
+- better process for unknown VIFs
+
+
 ## [0.9.3] - 2024-04-11
 
 ### Changed
