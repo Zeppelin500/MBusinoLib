@@ -12,6 +12,8 @@ Most M-Bus devices should be supported.
 
 Tested at ESPs, Arduino MKR and Uno R4.
 
+Live test of the [**MBusinoLib Example**](https://wokwi.com/projects/395030892526222337) at wokwi.com
+
 ### Credits
 
 **MBusinoLib** based at the AllWize/mbus-payload library but with much more decode capabilities. mbus-payload's encode capabilities are not supported.
