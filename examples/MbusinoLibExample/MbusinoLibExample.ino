@@ -36,7 +36,7 @@ void loop() {
     JsonDocument jsonBuffer;
     JsonArray root = jsonBuffer.add<JsonArray>();  
     uint8_t fields = payload.decode(&mbus_data[START_ADDRESS], packet_size - START_ADDRESS - 2, root); 
-    char jsonstring[2048] = { 0 };
+    char jsonstring[3074] = { 0 };
     uint8_t address = mbus_data[5]; 
     serializeJson(root, jsonstring);
 
