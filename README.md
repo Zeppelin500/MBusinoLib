@@ -12,7 +12,7 @@ Most M-Bus devices should be supported.
 
 Tested at ESPs, Arduino MKR and Uno R4.
 
-Live test of the [**MBusinoLib Example**](https://wokwi.com/projects/395348655585692673) at wokwi.com
+Live test of the [**MBusinoLib Example**](https://wokwi.com/projects/402235052803622913) at wokwi.com
 
 ### Credits
 
