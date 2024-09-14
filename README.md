@@ -1,6 +1,6 @@
 # MBusinoLib - an Arduino M-Bus Decoder Library
 
-[![version](https://img.shields.io/badge/version-0.9.5-brightgreen.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.9.6-brightgreen.svg)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](LICENSE)
 
 
@@ -13,6 +13,8 @@ Most M-Bus devices should be supported.
 Tested at ESPs, Arduino MKR and Uno R4.
 
 Live test of the [**MBusinoLib Example**](https://wokwi.com/projects/395348655585692673) at wokwi.com
+
+A working M-Bus --> MQTT gateway with this library [**MBusino**](https://github.com/Zeppelin500/MBusino)
 
 ### Credits
 
@@ -32,7 +34,7 @@ Include and instantiate the MBusinoLib class. The constructor takes the size of 
 MBusinoLib payload(uint8_t size);
 ```
 
-- `uint8_t size`: The maximum payload size to send, e.g. `255`
+- `uint8_t size`: The maximum payload size to send, e.g. `254`
 
 ## Decoding
 

@@ -178,7 +178,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 		}
 			
 			
-    // handle DIFE to prevent stumble if a DIFE is used
+    // handle DIFE
     uint16_t storageNumber = 0;
     if((dif & 0x40) == 0x40){
       storageNumber = 1;
@@ -214,12 +214,27 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     uint32_t vif = 0;
     uint8_t vifarray[4] = {0};
     uint8_t vifcounter = 0;
+
+    uint8_t vifes = 0;
+    uint8_t customVIFlen = 0;
+    char customVIF[20] = {0}; 
+		bool ifcustomVIF = false;	
+
     do {
       if (index == size) {
         _error = MBUS_ERROR::BUFFER_OVERFLOW;
         return 0;
       }
+
       vifarray[vifcounter] = buffer[index++];
+      
+      if((vifarray[0] & 0x7F) == 0x7C && vifcounter == 0){ // Customized ASCII VIF
+        customVIFlen = buffer[index];// length of ASCII VIF
+        if(vifarray[0] == 0xFC){
+          index = index + customVIFlen + 1; // SKIPskip the ASCII string to find the vife
+        }
+      }
+
       if(vifcounter < 2){   // only vif and first vife will be stored
         vif = (vif << 8) + vifarray[vifcounter];
       }
@@ -229,45 +244,51 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     if(((vifarray[0] & 0x80) == 0x80) && (vifarray[1] != 0x00 ) && (vifarray[0] != 0XFD) && (vifarray[0] != 0XFC)&& (vifarray[0] != 0XFB) && (vifarray[0] != 0XFF)){
       vif = (vifarray[0] & 0x7F);
     }
+    
+    if(vifarray[0] == 0x7C){ // Customized ASCII VIF
+      vif = 0x7C00;
+    }
+
+    if((vif & 0x7F) == 0x6D){  // TimePoint Date&Time TypF
+      dataCodingType = 6;   
+    }
+    else if((vif & 0x7F) == 0x6C){  // TimePoint Date TypG
+      dataCodingType = 7;  
+    }
+    else if((vif & 0x7F00) == 0x7C00){   // VIF 0xFC / 0x7c --> Customized VIF as ASCII
+      vif = 0xFC00;
+      if(vifarray[0] == 0xFC){
+        index = index - customVIFlen -1;
+      }
+      
+      char vifBuffer[customVIFlen];// = {0};    
+      for (uint8_t i = 0; i<=customVIFlen; i++) {
+        vifBuffer[customVIFlen-i] = buffer[index-vifcounter + 1]; 
+				index++;
+      }  
+      strncpy(customVIF, vifBuffer,customVIFlen );  
+			ifcustomVIF = true;	
+    }
 
     if((vifarray[1] & 0x80) == 0x80){ // set se first bit of first VIFE from 1 to 0 to find the right def
         vif = (vif & 0xFF7F);
     }
+
 
     // Find definition
     int8_t def = _findDefinition(vif);
     if (def < 0) {
       _error = MBUS_ERROR::UNSUPPORTED_VIF;
       def = 0; 
-      //return 0;
-    }
-    
-    char customVIF[10] = {0}; 
-		bool ifcustomVIF = false;	
-		
-    if((vif & 0x6D) == 0x6D){  // TimePoint Date&Time TypF
-      dataCodingType = 6;   
-    }
-    else if((vif & 0x6C) == 0x6C){  // TimePoint Date TypG
-      dataCodingType = 7;   
-    }
-    else if((vif & 0xFF00) == 0xFC00){   // VIF 0xFC --> Customized VIF as ASCII
-      uint8_t customVIFlen = (vif & 0x00FF);
-      char vifBuffer[customVIFlen];// = {0};    
-      for (uint8_t i = 0; i<=customVIFlen; i++) {
-        vifBuffer[i] = buffer[index]; 
-				index++;
-      }  
-      strncpy(customVIF, vifBuffer,customVIFlen );  
-			ifcustomVIF = true;	
-    } 	  
+      return 0;
+    }	  
 
     // Check buffer overflow
     if (index + len > size) {
       _error = MBUS_ERROR::BUFFER_OVERFLOW;
       return 0;
     }
-
+  
     // read value
     int16_t value16 = 0;  	// int16_t to notice negative values at 2 byte data
     int32_t value32 = 0;	// int32_t to notice negative values at 4 byte data	  
@@ -353,7 +374,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
           LVAR = FBh .. FFh :Reserved
           */
           // only ASCII string supported
-          if(buffer[index] >= 0x00 || buffer[index] <= 0xBF){ //ASCII string with LVAR characters
+          if(buffer[index] >= 0x00 && buffer[index] <= 0xBF){ //ASCII string with LVAR characters
             len = buffer[index];
             index ++;
             char charBuffer[len]; // = {0};        
@@ -479,6 +500,10 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     if(vifarray[1] == 0x7D){ // from table "Codes for Value Information Field Extension" E111 1101	Multiplicative correction factor: 1000
       scaled = scaled * 1000;
     }
+    else if((vifarray[1] & 0x78) == 0x70){ // from table "Codes for Value Information Field Extension" E111 0nnn	Multiplicative correction factor: 10nnn-6
+      scalar = (vifarray[1] & 7) - 6;
+      for (int8_t i=scalar; i<0; i++) scaled /= 10;
+    }
     
     // Init object
     JsonObject data = root.add<JsonObject>();
@@ -516,6 +541,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
       data["dife2"] = dife[2];
     }
     */
+
 	  if(buffer[index] == 0x0F ||buffer[index] == 0x1F){ // If last byte 1F/0F --> More records follow in next telegram
           break;
 	  }	       

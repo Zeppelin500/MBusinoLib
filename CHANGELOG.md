@@ -3,6 +3,13 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.6] - 2024-09-14
+
+### Added
+
+- VIF 7C customized ascii vif support
+- VIF FC VIFE support
+
 ## [0.9.5] - 2024-04-16
 
 ### Changed
