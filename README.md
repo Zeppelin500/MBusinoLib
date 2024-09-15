@@ -116,7 +116,7 @@ The returned units are Home Assistant compatible.
 There are two methods to get the right device- and state-classes for use as Home Assistant sensor.
 
 ```c
-const char* getStateClass(uint8_t code);
+const char* getDeviceClass(uint8_t code);
 ```
 
 ```c
