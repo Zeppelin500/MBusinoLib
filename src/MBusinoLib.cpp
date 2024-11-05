@@ -972,8 +972,6 @@ const char * MBusinoLib::getDeviceClass(uint8_t code) {
 const char * MBusinoLib::getStateClass(uint8_t code) {
   switch (code) {
 
-    case MBUS_CODE::ENERGY_WH:
-    case MBUS_CODE::ENERGY_J:
     case MBUS_CODE::AMPERES: 
     case MBUS_CODE::MASS_KG: 
     case MBUS_CODE::POWER_W:
@@ -1001,6 +999,8 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::RELATIVE_HUMIDITY:
       return "measurement";
 
+    case MBUS_CODE::ENERGY_WH:
+    case MBUS_CODE::ENERGY_J:
     case MBUS_CODE::UNKNOWN_VIF:    
     case MBUS_CODE::VOLUME_M3: 
     case MBUS_CODE::VOLUME_FT3:

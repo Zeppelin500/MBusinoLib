@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.7] - 2024-11-05
+
+### Changed
+
+- HA autodiscovery state class energy is now "total"
+
 ## [0.9.6] - 2024-09-14
 
 ### Added
