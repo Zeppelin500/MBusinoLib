@@ -109,11 +109,14 @@ enum MBUS_CODE {
   CUMULATION_COUNTER,
 
   // VIFE 0xFB
+	REACTIVE_ENERGY,
+  REACTIVE_POWER,
   RELATIVE_HUMIDITY,  
   VOLUME_FT3,
   VOLUME_GAL, 
   VOLUME_FLOW_GAL_M, 
-  VOLUME_FLOW_GAL_H, 
+  VOLUME_FLOW_GAL_H,
+  APPARENT_POWER, 
   FLOW_TEMPERATURE_F,
   RETURN_TEMPERATURE_F,
   TEMPERATURE_DIFF_F,
@@ -121,6 +124,7 @@ enum MBUS_CODE {
   TEMPERATURE_LIMIT_F,
   TEMPERATURE_LIMIT_C,
   MAX_POWER_W,
+  FREQUENCY,
 
   // VIFE 0xFC
   CUSTOMIZED_VIF,
@@ -142,7 +146,7 @@ enum MBUS_ERROR {
 
 // VIF codes
 
-#define MBUS_VIF_DEF_NUM                  84
+#define MBUS_VIF_DEF_NUM                  88
 
 typedef struct {
   uint8_t code;
@@ -231,8 +235,10 @@ static const vif_def_type vif_defs[MBUS_VIF_DEF_NUM] = {
 
   // VIFE 0xFB
   { MBUS_CODE::ENERGY_WH               , 0xFB00   , 2,   5},
+  { MBUS_CODE::REACTIVE_ENERGY         , 0xFB02   , 2,   0},
   { MBUS_CODE::ENERGY_J                , 0xFB08   , 2,   8},
   { MBUS_CODE::VOLUME_M3               , 0xFB10   , 2,   2},
+  { MBUS_CODE::REACTIVE_POWER          , 0xFB14   , 4,  -3},  
   { MBUS_CODE::MASS_KG                 , 0xFB18   , 2,   5},
   { MBUS_CODE::RELATIVE_HUMIDITY       , 0xFB1A   , 2,  -1},
 
@@ -242,7 +248,9 @@ static const vif_def_type vif_defs[MBUS_VIF_DEF_NUM] = {
   { MBUS_CODE::VOLUME_FLOW_GAL_M       , 0xFB25   , 1,   0},
   { MBUS_CODE::VOLUME_FLOW_GAL_H       , 0xFB26   , 1,   0},
   { MBUS_CODE::POWER_W                 , 0xFB28   , 2,   5},
+  { MBUS_CODE::FREQUENCY               , 0xFB2C   , 4,  -3},
   { MBUS_CODE::POWER_J_H               , 0xFB30   , 2,   8},
+  { MBUS_CODE::APPARENT_POWER          , 0xFB34   , 4,  -3},
   { MBUS_CODE::FLOW_TEMPERATURE_F      , 0xFB58   , 4,  -3},
   { MBUS_CODE::RETURN_TEMPERATURE_F    , 0xFB5C   , 4,  -3},
   { MBUS_CODE::TEMPERATURE_DIFF_F      , 0xFB60   , 4,  -3},
@@ -252,7 +260,7 @@ static const vif_def_type vif_defs[MBUS_VIF_DEF_NUM] = {
   { MBUS_CODE::MAX_POWER_W             , 0xFB78   , 8,  -3},
 
   // VIFE 0xFC
-  { MBUS_CODE::CUSTOMIZED_VIF          , 0xFC00   , 254,  -5},
+  { MBUS_CODE::CUSTOMIZED_VIF          , 0xFC00   , 254,  0},
 
   // VIFE 0xFF
   { MBUS_CODE::MANUFACTURER_SPECIFIC   , 0xFF00   , 254,  0}

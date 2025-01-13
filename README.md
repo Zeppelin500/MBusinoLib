@@ -1,6 +1,6 @@
 # MBusinoLib - an Arduino M-Bus Decoder Library
 
-[![version](https://img.shields.io/badge/version-0.9.7-brightgreen.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.9.8-brightgreen.svg)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](LICENSE)
 
 
@@ -108,7 +108,7 @@ Returns the last error ID, once returned the error is reset to OK. Possible erro
 ```c
 uint8_t getError(void);
 ```
-
+if you receive error code 4 or an "UNSUPPORTED_VIF", please open an issue
 
 ### Home Assistant
 

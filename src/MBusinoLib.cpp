@@ -219,6 +219,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     uint8_t customVIFlen = 0;
     char customVIF[20] = {0}; 
 		bool ifcustomVIF = false;	
+    uint8_t firstVifeExtension = 1; //8.4.5 Codes for Value Information Field Extension (VIFE)
 
     do {
       if (index == size) {
@@ -270,7 +271,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 			ifcustomVIF = true;	
     }
 
-    if((vifarray[1] & 0x80) == 0x80){ // set se first bit of first VIFE from 1 to 0 to find the right def
+    if((vifarray[1] & 0x80) == 0x80){ // set the first bit of first VIFE from 1 to 0 to find the right def
         vif = (vif & 0xFF7F);
     }
 
@@ -280,8 +281,39 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     if (def < 0) {
       _error = MBUS_ERROR::UNSUPPORTED_VIF;
       def = 0; 
-      return 0;
+      //return 0;
     }	  
+
+    //find VIF extensions like the table 8.4.5 Codes for Value Information Field Extension (VIFE)
+
+    int8_t extensionScaler = 0; // additional scaler (x * 10 ^extensionScaler)
+    double extensionAdditiveConstant = 0;
+
+    if(vifcounter-1 > 0){
+      if(vifarray[0] == 0xFB || vifarray[0] == 0xFD){
+        firstVifeExtension = 2;    
+      }
+      uint8_t extensionsCounter = firstVifeExtension;
+      do{
+        if((vifarray[extensionsCounter] & 0x7F) == 0x7D){ // from table "Codes for Value Information Field Extension" E111 1101	Multiplicative correction factor: 1000
+          extensionScaler = 3; // x1000
+        }
+        else if((vifarray[extensionsCounter] & 0x78) == 0x70){ // from table "Codes for Value Information Field Extension" E111 0nnn	Multiplicative correction factor: 10nnn-6
+          extensionScaler = (vifarray[extensionsCounter] & 7) - 6;
+        }
+        else if((vifarray[extensionsCounter] & 0x7C) == 0x78){ // from table "Codes for Value Information Field Extension" E111 10nn	Additive correction constant: 10nn-3 • unit of VIF (offset)
+          int8_t extensionAdditiveConstantScaler = 0;
+          extensionAdditiveConstantScaler = (vifarray[extensionsCounter] & 3) - 3;
+          extensionAdditiveConstant = 1;
+          for (int8_t i=0; i<extensionAdditiveConstantScaler; i++) extensionAdditiveConstant *= 10;
+          for (int8_t i=extensionAdditiveConstantScaler; i<0; i++) extensionAdditiveConstant /= 10;
+        }
+        extensionsCounter++;  
+      }while(extensionsCounter <= vifcounter);
+
+    }
+    
+
 
     // Check buffer overflow
     if (index + len > size) {
@@ -479,13 +511,14 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     double scaled = 0;
     int8_t scalar = 0;	
     if(def != 0){ // with unknown vif (def 0) we cant set the scalar
-      scalar = vif_defs[def].scalar + vif - vif_defs[def].base;
+      scalar = vif_defs[def].scalar + vif - vif_defs[def].base + extensionScaler;
     } 
     if(dataCodingType == 3){
       scaled = valueFloat;
       if(vifarray[0] != 0xFF){  
         for (int8_t i=0; i<scalar; i++) scaled *= 10;
         for (int8_t i=scalar; i<0; i++) scaled /= 10;
+        scaled = scaled + extensionAdditiveConstant;
       }
     }
     else if(vifarray[0]==0xFF){
@@ -495,16 +528,9 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
       scaled = value;
       for (int8_t i=0; i<scalar; i++) scaled *= 10;
       for (int8_t i=scalar; i<0; i++) scaled /= 10;
+      scaled = scaled + extensionAdditiveConstant;
     }
 
-    if(vifarray[1] == 0x7D){ // from table "Codes for Value Information Field Extension" E111 1101	Multiplicative correction factor: 1000
-      scaled = scaled * 1000;
-    }
-    else if((vifarray[1] & 0x78) == 0x70){ // from table "Codes for Value Information Field Extension" E111 0nnn	Multiplicative correction factor: 10nnn-6
-      scalar = (vifarray[1] & 7) - 6;
-      for (int8_t i=scalar; i<0; i++) scaled /= 10;
-    }
-    
     // Init object
     JsonObject data = root.add<JsonObject>();
     //data["vif"] = String("0x" + String(vif,HEX));
@@ -663,7 +689,19 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
       return "month"; 
 
     case MBUS_CODE::RELATIVE_HUMIDITY:
-      return "%";
+      return "%";       
+
+    case MBUS_CODE::REACTIVE_ENERGY:
+      return "kvarh";
+
+    case MBUS_CODE::REACTIVE_POWER:
+      return "kvar";  
+
+    case MBUS_CODE::APPARENT_POWER:
+      return "kVA";             
+
+    case MBUS_CODE::FREQUENCY:
+      return "Hz";  
 
     default:
       break; 
@@ -846,6 +884,18 @@ const char * MBusinoLib::getCodeName(uint8_t code) {
     case MBUS_CODE::RELATIVE_HUMIDITY:
       return "humidity";
 
+    case MBUS_CODE::REACTIVE_ENERGY:
+      return "reactive_energy";   
+
+    case MBUS_CODE::REACTIVE_POWER:
+      return "reactive_power";    
+
+    case MBUS_CODE::APPARENT_POWER:
+      return "apparent_power";          
+
+    case MBUS_CODE::FREQUENCY:
+      return "frequency";      
+
     default:
         break; 
 
@@ -859,7 +909,7 @@ const char * MBusinoLib::getDeviceClass(uint8_t code) {
   switch (code) {
 
     case MBUS_CODE::ENERGY_WH:
-    case MBUS_CODE::ENERGY_J:
+    case MBUS_CODE::ENERGY_J: 
       return "energy";
     
     case MBUS_CODE::VOLUME_M3: 
@@ -934,6 +984,9 @@ const char * MBusinoLib::getDeviceClass(uint8_t code) {
     case MBUS_CODE::RELATIVE_HUMIDITY:
       return "humidity";
 
+    case MBUS_CODE::FREQUENCY:
+      return "frequency";    
+
     case MBUS_CODE::UNKNOWN_VIF:
     case MBUS_CODE::FABRICATION_NUMBER: 
     case MBUS_CODE::BUS_ADDRESS: 
@@ -961,6 +1014,9 @@ const char * MBusinoLib::getDeviceClass(uint8_t code) {
     case MBUS_CODE::CUMULATION_COUNTER: 
     case MBUS_CODE::CUSTOMIZED_VIF: 
     case MBUS_CODE::MANUFACTURER_SPECIFIC: 
+    case MBUS_CODE::REACTIVE_ENERGY: 
+    case MBUS_CODE::REACTIVE_POWER:  
+    case MBUS_CODE::APPARENT_POWER:   
       return "";  
     default:
         break;
@@ -1000,7 +1056,7 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
       return "measurement";
 
     case MBUS_CODE::ENERGY_WH:
-    case MBUS_CODE::ENERGY_J:
+    case MBUS_CODE::ENERGY_J:   
     case MBUS_CODE::UNKNOWN_VIF:    
     case MBUS_CODE::VOLUME_M3: 
     case MBUS_CODE::VOLUME_FT3:
@@ -1048,7 +1104,11 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::RESET_COUNTER: 
     case MBUS_CODE::CUMULATION_COUNTER: 
     case MBUS_CODE::CUSTOMIZED_VIF:
-    case MBUS_CODE::MANUFACTURER_SPECIFIC:  
+    case MBUS_CODE::MANUFACTURER_SPECIFIC: 
+    case MBUS_CODE::REACTIVE_ENERGY: 
+    case MBUS_CODE::REACTIVE_POWER:     
+    case MBUS_CODE::FREQUENCY: 
+    case MBUS_CODE::APPARENT_POWER:
       return "total";
     default:
         break;

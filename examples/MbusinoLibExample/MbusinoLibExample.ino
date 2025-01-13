@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License along with thi
 #include <ArduinoJson.h> // is used to transfer the decoded recordings
 
 #define START_ADDRESS 0x13  // Start address for decoding
-unsigned long timerMbus = 0;
+unsigned long timerMbus = 5000;
 
 void setup() {
 Serial.begin(9600);

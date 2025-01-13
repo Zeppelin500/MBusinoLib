@@ -3,6 +3,20 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.8] - 2025-01-13
+
+### Added
+
+- VIF FB2C frequency
+- VIF FB34 apparent power
+- VIF FB02 reactive energy
+
+- additve / multiplicative corretion factor is now working for every VIF
+
+### Changed
+
+- unknown VIFs do not longer stop decoding
+
 ## [0.9.7] - 2024-11-05
 
 ### Changed
