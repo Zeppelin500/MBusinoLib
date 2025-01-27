@@ -211,8 +211,8 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
  
 
     // Get VIF(E)
-    uint32_t vif = 0;
-    uint8_t vifarray[4] = {0};
+    uint64_t vif = 0;
+    uint8_t vifarray[10] = {0};
     uint8_t vifcounter = 0;
 
     uint8_t vifes = 0;
@@ -221,7 +221,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 		bool ifcustomVIF = false;	
     uint8_t firstVifeExtension = 1; //8.4.5 Codes for Value Information Field Extension (VIFE)
 
-    do {
+    do { // copy the VIF(E)s to an array for later analysys and the variable vif for the devinition 
       if (index == size) {
         _error = MBUS_ERROR::BUFFER_OVERFLOW;
         return 0;
@@ -236,13 +236,17 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
         }
       }
 
-      if(vifcounter < 2){   // only vif and first vife will be stored
+      if(vifcounter < 2){   // only vif and first vife will be stored in vif normaly....
         vif = (vif << 8) + vifarray[vifcounter];
       }
+      else if(vifcounter == 2 && vif == 0xFDFD){   // ... but FIV 0xFDFD uses the third Byte to assign the deffinition. 
+        vif = (vif << 8) + vifarray[vifcounter];
+      }
+
       vifcounter++;
     } while ((vifarray[vifcounter-1] & 0x80) == 0x80);
 
-    if(((vifarray[0] & 0x80) == 0x80) && (vifarray[1] != 0x00 ) && (vifarray[0] != 0XFD) && (vifarray[0] != 0XFC)&& (vifarray[0] != 0XFB) && (vifarray[0] != 0XFF)){
+    if(((vifarray[0] & 0x80) == 0x80) && (vifarray[1] != 0x00 ) && (vifarray[0] != 0xFD) && (vifarray[0] != 0xFC)&& (vifarray[0] != 0xFB) && (vifarray[0] != 0xFF)){ //if the true vif is in the first byte
       vif = (vifarray[0] & 0x7F);
     }
     
@@ -259,41 +263,48 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     else if((vif & 0x7F00) == 0x7C00){   // VIF 0xFC / 0x7c --> Customized VIF as ASCII
       vif = 0xFC00;
       if(vifarray[0] == 0xFC){
-        index = index - customVIFlen -1;
+        index = index - customVIFlen -1; // befor, we skipped the ASCII bytes to find the VIFEs, so we set the index back to reed the ASCII string
       }
       
       char vifBuffer[customVIFlen];// = {0};    
-      for (uint8_t i = 0; i<=customVIFlen; i++) {
+      for (uint8_t i = 0; i<=customVIFlen; i++) { // reeding the ASCII string ...
         vifBuffer[customVIFlen-i] = buffer[index-vifcounter + 1]; 
 				index++;
       }  
-      strncpy(customVIF, vifBuffer,customVIFlen );  
+      strncpy(customVIF, vifBuffer,customVIFlen ); // ... and copy it to our variable
 			ifcustomVIF = true;	
     }
 
-    if((vifarray[1] & 0x80) == 0x80){ // set the first bit of first VIFE from 1 to 0 to find the right def
-        vif = (vif & 0xFF7F);
-    }
-
+    vif = (vif & 0xFFFFFF7F); // delete the leeding zero of the last vif byte, if additional vifes follow, to find the right definition
 
     // Find definition
-    int8_t def = _findDefinition(vif);
+    int16_t def = _findDefinition(vif);
     if (def < 0) {
       _error = MBUS_ERROR::UNSUPPORTED_VIF;
       def = 0; 
-      //return 0;
+      //return 0; 
     }	  
 
-    //find VIF extensions like the table 8.4.5 Codes for Value Information Field Extension (VIFE)
+    //find VIF extensions like the table 8.4.5 Codes for Value Information Field Extension (VIFE) ---------------------------------------------------------------
 
     int8_t extensionScaler = 0; // additional scaler (x * 10 ^extensionScaler)
     double extensionAdditiveConstant = 0;
+    char stringNameExtension[10] = {0}; //needed for VIF name extensions like L1,L2,L3 ans so on e.g: Voltage L1 
 
     if(vifcounter-1 > 0){
-      if(vifarray[0] == 0xFB || vifarray[0] == 0xFD){
+
+      if(vifarray[0] == 0xFB || (vifarray[0] == 0xFD && vifarray[1] != 0xFD) || vifarray[0] == 0xFF){  // to find the first vife after the true vif
         firstVifeExtension = 2;    
       }
+      else if (vifarray[0] == 0xFD && vifarray[1] == 0xFD){
+        firstVifeExtension = 3;
+      }
+      else{
+        firstVifeExtension = 1;
+      }
+
       uint8_t extensionsCounter = firstVifeExtension;
+
       do{
         if((vifarray[extensionsCounter] & 0x7F) == 0x7D){ // from table "Codes for Value Information Field Extension" E111 1101	Multiplicative correction factor: 1000
           extensionScaler = 3; // x1000
@@ -308,13 +319,53 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
           for (int8_t i=0; i<extensionAdditiveConstantScaler; i++) extensionAdditiveConstant *= 10;
           for (int8_t i=extensionAdditiveConstantScaler; i<0; i++) extensionAdditiveConstant /= 10;
         }
+        else if(vifarray[extensionsCounter] == 0xFC || vifarray[extensionsCounter] == 0xFF){
+          uint8_t vifExtensionBuffer = vifarray[extensionsCounter+1] & 0x7F;
+          switch(vifExtensionBuffer){  
+            case 1:
+              strcpy(stringNameExtension, "_L1");
+              extensionsCounter++;  
+              break;
+            case 2:
+              strcpy(stringNameExtension, "_L2");
+              extensionsCounter++;  
+              break;
+            case 3:
+              strcpy(stringNameExtension, "_L3");
+              extensionsCounter++;  
+              break;
+            case 4:
+              strcpy(stringNameExtension, "_N");
+              extensionsCounter++;  
+              break;
+            case 5:
+              strcpy(stringNameExtension, "_L1-L2");
+              extensionsCounter++;  
+              break;
+            case 6:
+              strcpy(stringNameExtension, "_L2-L3");
+              extensionsCounter++;  
+              break;
+            case 7:
+              strcpy(stringNameExtension, "_L3-L1");
+              extensionsCounter++;  
+              break;  
+            case 10:
+              strcpy(stringNameExtension, "_abs.");
+              extensionsCounter++;  
+              break;    
+            case 12:
+              strcpy(stringNameExtension, "_delta");
+              extensionsCounter++;  
+              break;                                                                                                                                      
+            break;
+          }
+        }
         extensionsCounter++;  
       }while(extensionsCounter <= vifcounter);
 
     }
     
-
-
     // Check buffer overflow
     if (index + len > size) {
       _error = MBUS_ERROR::BUFFER_OVERFLOW;
@@ -533,8 +584,11 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 
     // Init object
     JsonObject data = root.add<JsonObject>();
-    //data["vif"] = String("0x" + String(vif,HEX));
-    data["code"] = vif_defs[def].code;
+    data["vif"] = String("0x" + String(vif,HEX));
+    //data["code"] = vif_defs[def].code;
+    //data["vifarray1"] = String("0x" + String(vifarray[1],HEX));
+    //data["vifarray2"] = String("0x" + String(vifarray[2],HEX));
+
 
     if(asciiValue != 1){ //0 = double, 1 = ASCII, 2 = both;
       //data["scalar"] = scalar;
@@ -550,7 +604,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     else if(getCodeUnits(vif_defs[def].code)!=0){
       data["units"] = String(getCodeUnits(vif_defs[def].code));
     }
-    data["name"] = String(getCodeName(vif_defs[def].code)+String(stringFunctionField));
+    data["name"] = String(getCodeName(vif_defs[def].code)+String(stringNameExtension)+String(stringFunctionField));
     if(subUnit > 0){
       data["subUnit"] = subUnit;
     }
@@ -681,14 +735,14 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
     case MBUS_CODE::TEMPERATURE_LIMIT_F:
       return "°F";
 
-//    case MBUS_CODE::CUSTOMIZED_VIF:
-//    case MBUS_CODE::MANUFACTURER_SPECIFIC:
-//      return "X";  
-
-    case MBUS_CODE::STORAGE_INTERVAL_MONTH:     
+    case MBUS_CODE::STORAGE_INTERVAL_MONTH:  
+    case MBUS_CODE::REMAIN_BAT_LIFE_MONTH:        
       return "month"; 
 
     case MBUS_CODE::RELATIVE_HUMIDITY:
+    case MBUS_CODE::BATTERY_PERCENTAGE:   
+    case MBUS_CODE::CHAMBER_POLLUTION_LEVEL:
+    case MBUS_CODE::MOISTURE_LEVEL_PERCENT:         
       return "%";       
 
     case MBUS_CODE::REACTIVE_ENERGY:
@@ -698,10 +752,60 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
       return "kvar";  
 
     case MBUS_CODE::APPARENT_POWER:
-      return "kVA";             
+      return "kVA";     
+
+    case MBUS_CODE::PHASE_VOLT_DEG:
+      return "°"; 
+
+    case MBUS_CODE::PHASE_CURR_DEG:
+      return "°"; 
 
     case MBUS_CODE::FREQUENCY:
       return "Hz";  
+
+    case MBUS_CODE::CARBON_DIOXIDE_PPM:
+    case MBUS_CODE::CARBON_MONOXIDE_PPM:   
+      return "ppm";    
+
+    case MBUS_CODE::VOLATILE_ORG_COMP_ppb:   
+      return "ppb";   
+
+    case MBUS_CODE::VOLATILE_ORG_COMP_UG_M3:
+    case MBUS_CODE::PARTICLES_UNSPEC_UG_M3:
+    case MBUS_CODE::PARTICLES_PM1_UG_M3:
+    case MBUS_CODE::PARTICLES_PM2_5_UG_M3:
+    case MBUS_CODE::PARTICLES_PM10_UG_M3:
+      return "µg/m³";    
+
+    case MBUS_CODE::PARTICLES_UNSPEC_1M3:
+    case MBUS_CODE::PARTICLES_PM1_1M3: 
+    case MBUS_CODE::PARTICLES_PM2_5_1M3:    
+    case MBUS_CODE::PARTICLES_PM10_1M3:    
+      return "1/m³";     
+
+    case MBUS_CODE::ILLUMINANCE_LUX:
+      return "lx"; 
+
+    case MBUS_CODE::LUMINOUS_IDENSITY_CD:
+      return "cd"; 
+
+    case MBUS_CODE::RADIANT_FLUX_DENS:
+      return "W/m²"; 
+
+    case MBUS_CODE::WIND_SPEED_M_S:
+      return "m/s"; 
+
+    case MBUS_CODE::RAINFALL_L_MM:
+      return "l/mm²"; 
+
+    case MBUS_CODE::FORMAZIN_NEPHELOMETER_U:
+      return "FNU"; 
+
+    case MBUS_CODE::DECIBEL_A:
+      return "dB"; 
+
+    case MBUS_CODE::DISTANCE_MM:
+      return "mm";                
 
     default:
       break; 
@@ -891,10 +995,132 @@ const char * MBusinoLib::getCodeName(uint8_t code) {
       return "reactive_power";    
 
     case MBUS_CODE::APPARENT_POWER:
-      return "apparent_power";          
+      return "apparent_power"; 
+
+    case MBUS_CODE::PHASE_VOLT_DEG:
+      return "phase_deg_voltage"; 
+
+    case MBUS_CODE::PHASE_CURR_DEG:
+      return "phase_deg_current";               
 
     case MBUS_CODE::FREQUENCY:
-      return "frequency";      
+      return "frequency";  
+
+    case MBUS_CODE::SPECIAL_SUPPLIER_INFO:
+      return "special_suppl_info";    
+
+    case MBUS_CODE::CURRENT_SELECTED_APL:
+      return "current_selected_appl."; 
+
+    case MBUS_CODE::SUB_DEVICES:
+      return "sub_devices"; 
+
+    case MBUS_CODE::REMAIN_BAT_LIFE_MONTH:
+      return "remain_bat_life"; 
+
+    case MBUS_CODE::CARBON_DIOXIDE_PPM:
+      return "CO²"; 
+    
+    case MBUS_CODE::CARBON_MONOXIDE_PPM:
+      return "CO"; 
+
+    case MBUS_CODE::VOLATILE_ORG_COMP_ppb:
+    case MBUS_CODE::VOLATILE_ORG_COMP_UG_M3:
+      return "VOC"; 
+
+    case MBUS_CODE::PARTICLES_UNSPEC_UG_M3:
+    case MBUS_CODE::PARTICLES_UNSPEC_1M3:
+      return "particels_unspecific"; 
+
+    case MBUS_CODE::PARTICLES_PM1_UG_M3:
+    case MBUS_CODE::PARTICLES_PM1_1M3:    
+      return "particles_PM1"; 
+
+    case MBUS_CODE::PARTICLES_PM2_5_UG_M3:
+    case MBUS_CODE::PARTICLES_PM2_5_1M3:    
+      return "particles_PM2,5"; 
+
+    case MBUS_CODE::PARTICLES_PM10_UG_M3:
+    case MBUS_CODE::PARTICLES_PM10_1M3:    
+      return "particles_PM10"; 
+
+    case MBUS_CODE::ILLUMINANCE_LUX:
+      return "illuminance"; 
+
+    case MBUS_CODE::LUMINOUS_IDENSITY_CD:
+      return "luminus_idensity"; 
+
+    case MBUS_CODE::RADIANT_FLUX_DENS:
+      return "radiant_flux_density"; 
+
+    case MBUS_CODE::WIND_SPEED_M_S:
+      return "wind_speed"; 
+
+    case MBUS_CODE::RAINFALL_L_MM:
+      return "rainfall"; 
+
+    case MBUS_CODE::FORMAZIN_NEPHELOMETER_U:
+      return "formazin_nephelometric"; 
+
+    case MBUS_CODE::POTENTIAL_HYDROGEN_PH:
+      return "PH"; 
+
+    case MBUS_CODE::DISMOUNTS_COUNTER:
+      return "dismounts_counter"; 
+
+    case MBUS_CODE::TEST_BUTTON_COUNTER:
+      return "test_button_counter"; 
+
+    case MBUS_CODE::ALARM_COUNTER:
+      return "alarm_counter"; 
+
+    case MBUS_CODE::ALARM_MUTE_COUNTER:
+      return "alarm_mute_counter"; 
+
+    case MBUS_CODE::OBSTACLE_DETECT_COUNTER:
+      return "obstacle_detect_counter"; 
+
+    case MBUS_CODE::SMOKE_ENTRIES_COUNTER:
+      return "smoke_entries_counter"; 
+
+    case MBUS_CODE::SMOKE_CHAMBER_DEFECTS:
+      return "smoke_chamber_defects"; 
+
+    case MBUS_CODE::SELF_TEST_COUNTER:
+      return "self_test_counter"; 
+
+    case MBUS_CODE::SOUNDER_DEFECT_COUNTER:
+      return "sounder_defect_counter"; 
+
+    case MBUS_CODE::DECIBEL_A:
+      return "decibel_A"; 
+
+    case MBUS_CODE::BATTERY_PERCENTAGE:
+      return "battery"; 
+
+    case MBUS_CODE::CHAMBER_POLLUTION_LEVEL:
+      return "chamber_pollution_level"; 
+
+    case MBUS_CODE::DISTANCE_MM:
+      return "distance"; 
+
+    case MBUS_CODE::MOISTURE_LEVEL_PERCENT:
+      return "moisture_level"; 
+
+    case MBUS_CODE::PRESSURE_SENS_STATUS:
+      return "pressure_sens_status"; 
+
+    case MBUS_CODE::SMOKE_ALARM_STATUS:
+      return "smoke_alarm_status"; 
+
+    case MBUS_CODE::CO_ALARM_STATUS:
+      return "CO_alarm_status"; 
+
+    case MBUS_CODE::HEAT_ALARM_STATUS:
+      return "heat_alarm_status"; 
+
+    case MBUS_CODE::DOOR_WINDOW_SENS_STATUS:
+      return "door_window_sens_status"; 
 
     default:
         break; 
@@ -982,7 +1208,7 @@ const char * MBusinoLib::getDeviceClass(uint8_t code) {
       return "current";
 
     case MBUS_CODE::RELATIVE_HUMIDITY:
-      return "humidity";
+      return "humidity";      
 
     case MBUS_CODE::FREQUENCY:
       return "frequency";    
@@ -1016,7 +1242,54 @@ const char * MBusinoLib::getDeviceClass(uint8_t code) {
     case MBUS_CODE::MANUFACTURER_SPECIFIC: 
     case MBUS_CODE::REACTIVE_ENERGY: 
     case MBUS_CODE::REACTIVE_POWER:  
-    case MBUS_CODE::APPARENT_POWER:   
+    case MBUS_CODE::APPARENT_POWER: 
+    case MBUS_CODE::PHASE_VOLT_DEG:
+    case MBUS_CODE::PHASE_CURR_DEG: 
+    case MBUS_CODE::SPECIAL_SUPPLIER_INFO:  
+
+// has to be sort
+    case MBUS_CODE::CURRENT_SELECTED_APL:
+    case MBUS_CODE::SUB_DEVICES:
+    case MBUS_CODE::REMAIN_BAT_LIFE_MONTH:
+    case MBUS_CODE::CARBON_DIOXIDE_PPM:
+    case MBUS_CODE::CARBON_MONOXIDE_PPM:
+    case MBUS_CODE::VOLATILE_ORG_COMP_ppb:
+    case MBUS_CODE::VOLATILE_ORG_COMP_UG_M3:
+    case MBUS_CODE::PARTICLES_UNSPEC_UG_M3:
+    case MBUS_CODE::PARTICLES_UNSPEC_1M3:
+    case MBUS_CODE::PARTICLES_PM1_UG_M3:
+    case MBUS_CODE::PARTICLES_PM1_1M3:    
+    case MBUS_CODE::PARTICLES_PM2_5_UG_M3:
+    case MBUS_CODE::PARTICLES_PM2_5_1M3:    
+    case MBUS_CODE::PARTICLES_PM10_UG_M3:
+    case MBUS_CODE::PARTICLES_PM10_1M3:    
+    case MBUS_CODE::ILLUMINANCE_LUX:
+    case MBUS_CODE::LUMINOUS_IDENSITY_CD:
+    case MBUS_CODE::RADIANT_FLUX_DENS:
+    case MBUS_CODE::WIND_SPEED_M_S:
+    case MBUS_CODE::RAINFALL_L_MM:
+    case MBUS_CODE::FORMAZIN_NEPHELOMETER_U:
+    case MBUS_CODE::POTENTIAL_HYDROGEN_PH:
+    case MBUS_CODE::DISMOUNTS_COUNTER:
+    case MBUS_CODE::TEST_BUTTON_COUNTER:
+    case MBUS_CODE::ALARM_COUNTER:
+    case MBUS_CODE::ALARM_MUTE_COUNTER:
+    case MBUS_CODE::OBSTACLE_DETECT_COUNTER:
+    case MBUS_CODE::SMOKE_ENTRIES_COUNTER:
+    case MBUS_CODE::SMOKE_CHAMBER_DEFECTS:
+    case MBUS_CODE::SELF_TEST_COUNTER:
+    case MBUS_CODE::SOUNDER_DEFECT_COUNTER:
+    case MBUS_CODE::DECIBEL_A:
+    case MBUS_CODE::BATTERY_PERCENTAGE:
+    case MBUS_CODE::CHAMBER_POLLUTION_LEVEL:
+    case MBUS_CODE::DISTANCE_MM:
+    case MBUS_CODE::MOISTURE_LEVEL_PERCENT:
+    case MBUS_CODE::PRESSURE_SENS_STATUS:
+    case MBUS_CODE::SMOKE_ALARM_STATUS:
+    case MBUS_CODE::CO_ALARM_STATUS:
+    case MBUS_CODE::HEAT_ALARM_STATUS:
+    case MBUS_CODE::DOOR_WINDOW_SENS_STATUS:
+
       return "";  
     default:
         break;
@@ -1053,6 +1326,8 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::BAUDRATE_BPS:
     case MBUS_CODE::VOLTS: 
     case MBUS_CODE::RELATIVE_HUMIDITY:
+    case MBUS_CODE::PHASE_VOLT_DEG:
+    case MBUS_CODE::PHASE_CURR_DEG:    
       return "measurement";
 
     case MBUS_CODE::ENERGY_WH:
@@ -1109,6 +1384,49 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::REACTIVE_POWER:     
     case MBUS_CODE::FREQUENCY: 
     case MBUS_CODE::APPARENT_POWER:
+
+// has to be sort
+    case MBUS_CODE::CURRENT_SELECTED_APL:
+    case MBUS_CODE::SUB_DEVICES:
+    case MBUS_CODE::REMAIN_BAT_LIFE_MONTH:
+    case MBUS_CODE::CARBON_DIOXIDE_PPM:
+    case MBUS_CODE::CARBON_MONOXIDE_PPM:
+    case MBUS_CODE::VOLATILE_ORG_COMP_ppb:
+    case MBUS_CODE::VOLATILE_ORG_COMP_UG_M3:
+    case MBUS_CODE::PARTICLES_UNSPEC_UG_M3:
+    case MBUS_CODE::PARTICLES_UNSPEC_1M3:
+    case MBUS_CODE::PARTICLES_PM1_UG_M3:
+    case MBUS_CODE::PARTICLES_PM1_1M3:    
+    case MBUS_CODE::PARTICLES_PM2_5_UG_M3:
+    case MBUS_CODE::PARTICLES_PM2_5_1M3:    
+    case MBUS_CODE::PARTICLES_PM10_UG_M3:
+    case MBUS_CODE::PARTICLES_PM10_1M3:    
+    case MBUS_CODE::ILLUMINANCE_LUX:
+    case MBUS_CODE::LUMINOUS_IDENSITY_CD:
+    case MBUS_CODE::RADIANT_FLUX_DENS:
+    case MBUS_CODE::WIND_SPEED_M_S:
+    case MBUS_CODE::RAINFALL_L_MM:
+    case MBUS_CODE::FORMAZIN_NEPHELOMETER_U:
+    case MBUS_CODE::POTENTIAL_HYDROGEN_PH:
+    case MBUS_CODE::DISMOUNTS_COUNTER:
+    case MBUS_CODE::TEST_BUTTON_COUNTER:
+    case MBUS_CODE::ALARM_COUNTER:
+    case MBUS_CODE::ALARM_MUTE_COUNTER:
+    case MBUS_CODE::OBSTACLE_DETECT_COUNTER:
+    case MBUS_CODE::SMOKE_ENTRIES_COUNTER:
+    case MBUS_CODE::SMOKE_CHAMBER_DEFECTS:
+    case MBUS_CODE::SELF_TEST_COUNTER:
+    case MBUS_CODE::SOUNDER_DEFECT_COUNTER:
+    case MBUS_CODE::DECIBEL_A:
+    case MBUS_CODE::BATTERY_PERCENTAGE:
+    case MBUS_CODE::CHAMBER_POLLUTION_LEVEL:
+    case MBUS_CODE::DISTANCE_MM:
+    case MBUS_CODE::MOISTURE_LEVEL_PERCENT:
+    case MBUS_CODE::PRESSURE_SENS_STATUS:
+    case MBUS_CODE::SMOKE_ALARM_STATUS:
+    case MBUS_CODE::CO_ALARM_STATUS:
+    case MBUS_CODE::HEAT_ALARM_STATUS:
+    case MBUS_CODE::DOOR_WINDOW_SENS_STATUS:  
       return "total";
     default:
         break;
@@ -1118,7 +1436,7 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
 
 // ----------------------------------------------------------------------------
 
-int8_t MBusinoLib::_findDefinition(uint32_t vif) {
+int16_t MBusinoLib::_findDefinition(uint64_t vif) {
   
   for (uint8_t i=0; i<MBUS_VIF_DEF_NUM; i++) {
     vif_def_type vif_def = vif_defs[i];
