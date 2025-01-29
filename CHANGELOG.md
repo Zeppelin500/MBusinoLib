@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.10] - 2025-01-29
+
+### Changed
+
+- change some uint64 convertion syntax because of Arduinos limitations 
+
 ## [0.9.9] - 2025-01-27
 
 ### Added

@@ -1,6 +1,6 @@
 # MBusinoLib - an Arduino M-Bus Decoder Library
 
-[![version](https://img.shields.io/badge/version-0.9.9-brightgreen.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.9.10-brightgreen.svg)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](LICENSE)
 
 
@@ -103,7 +103,6 @@ Returns the last error ID, once returned the error is reset to OK. Possible erro
 * `MBUS_ERROR::UNSUPPORTED_CODING`: ~~The library only supports 1,2,3 and 4 bytes integers and 2,4,6 or 8 BCD.~~
 * ~~`MBUS_ERROR::UNSUPPORTED_RANGE`: Couldn't encode the provided combination of code and scale, try changing the scale of your value.~~
 * `MBUS_ERROR::UNSUPPORTED_VIF`: When decoding: the VIF is not supported and thus it cannot be decoded.
-* `MBUS_ERROR::NEGATIVE_VALUE`: ~~Library only supports non-negative values at the moment.~~
 
 ```c
 uint8_t getError(void);
