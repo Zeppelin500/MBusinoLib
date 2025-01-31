@@ -196,7 +196,7 @@ enum MBUS_ERROR {
 
 typedef struct {
   uint8_t code;
-  uint64_t base;
+  uint32_t base;
   uint8_t size;
   int8_t scalar;
 } vif_def_type;
@@ -380,7 +380,7 @@ public:
   
 protected:
 
-  int16_t _findDefinition(uint64_t vif);
+  int16_t _findDefinition(uint32_t vif);
   uint32_t _getVIF(uint8_t code, int8_t scalar);
 
   uint8_t * _buffer;

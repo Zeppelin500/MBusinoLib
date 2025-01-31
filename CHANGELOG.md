@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.11] - 2025-01-31
+
+### Changed
+
+- fix Arduino and pico Pi issues better then in 0.9.10 
+
 ## [0.9.10] - 2025-01-29
 
 ### Changed

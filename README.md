@@ -1,6 +1,6 @@
 # MBusinoLib - an Arduino M-Bus Decoder Library
 
-[![version](https://img.shields.io/badge/version-0.9.10-brightgreen.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.9.11-brightgreen.svg)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](LICENSE)
 
 
@@ -10,7 +10,7 @@ The **MBusinoLib** library enables Arduino devices to decode M-Bus (Meterbus) RS
 
 Most M-Bus devices should be supported.
 
-Tested at ESPs, Arduino MKR and Uno R4.
+Tested at ESPs, Arduino MKR, pico pi and Uno R4. 8 Bit Arduinos do not work because of missing float64 support.
 
 Live test of the [**MBusinoLib Example**](https://wokwi.com/projects/402235052803622913) at wokwi.com
 

@@ -211,7 +211,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
  
 
     // Get VIF(E)
-    uint64_t vif = 0;
+    uint32_t vif = 0;
     uint8_t vifarray[10] = {0};
     uint8_t vifcounter = 0;
 
@@ -584,10 +584,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 
     // Init object
     JsonObject data = root.add<JsonObject>();
-  //  data["vif"] = String("0x" + String(vif,HEX));
-      char vifBuffer[10] = {0};  
-      ltoa (vif,vifBuffer,HEX);
-      data["vif"] = String("0x" + String(vifBuffer));
+      data["vif"] = String("0x" + String(vif,HEX));
       data["code"] = vif_defs[def].code;
     //data["vifarray1"] = String("0x" + String(vifarray[1],HEX));
     //data["vifarray2"] = String("0x" + String(vifarray[2],HEX));
@@ -1439,7 +1436,7 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
 
 // ----------------------------------------------------------------------------
 
-int16_t MBusinoLib::_findDefinition(uint64_t vif) {
+int16_t MBusinoLib::_findDefinition(uint32_t vif) {
   
   for (uint8_t i=0; i<MBUS_VIF_DEF_NUM; i++) {
     vif_def_type vif_def = vif_defs[i];
