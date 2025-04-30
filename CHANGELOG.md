@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.12] - 2025-04-30
+
+### Changed
+
+- alow empty first VIFE
+
 ## [0.9.11] - 2025-01-31
 
 ### Changed

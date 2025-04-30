@@ -246,7 +246,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
       vifcounter++;
     } while ((vifarray[vifcounter-1] & 0x80) == 0x80);
 
-    if(((vifarray[0] & 0x80) == 0x80) && (vifarray[1] != 0x00 ) && (vifarray[0] != 0xFD) && (vifarray[0] != 0xFC)&& (vifarray[0] != 0xFB) && (vifarray[0] != 0xFF)){ //if the true vif is in the first byte
+    if(((vifarray[0] & 0x80) == 0x80) && (vifarray[0] != 0xFD) && (vifarray[0] != 0xFC)&& (vifarray[0] != 0xFB) && (vifarray[0] != 0xFF)){ //if the true vif is in the first byte
       vif = (vifarray[0] & 0x7F);
     }
     
