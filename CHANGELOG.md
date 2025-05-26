@@ -3,6 +3,13 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.13] - 2025-05-26
+
+### Added
+
+- support of first nibble F marked negative BCDs [outside the standard]
+- detects whether subsequent telegrams are present (multi telegram slaves)
+
 ## [0.9.12] - 2025-04-30
 
 ### Changed

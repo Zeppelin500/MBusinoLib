@@ -417,6 +417,10 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
           if(len==2){
             for (uint8_t i = 0; i<len; i++) {
               uint8_t byte = buffer[index + len - i - 1];
+              if((i == 0) && ((byte & 0xF0) == 0xF0)){ //Although only unsigned BCDs are intended, some manufacturers use an F in the first halfbyte to mark negative numbers
+                byte = byte & 0x0F;
+                negative = true;
+              }
               value16 = (value16 * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
             }
             value = (int64_t)value16;
@@ -424,6 +428,10 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
           else if(len==4){
             for (uint8_t i = 0; i<len; i++) {
               uint8_t byte = buffer[index + len - i - 1];
+              if((i == 0) && ((byte & 0xF0) == 0xF0)){ //Although only unsigned BCDs are intended, some manufacturers use an F in the first halfbyte to mark negative numbers
+                byte = byte & 0x0F;
+                negative = true;
+              }
               value32 = (value32 * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
             }
             value = (int64_t)value32;				 
@@ -431,6 +439,10 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
           else{
             for (uint8_t i = 0; i<len; i++) {
               uint8_t byte = buffer[index + len - i - 1];
+              if((i == 0) && ((byte & 0xF0) == 0xF0)){ //Although only unsigned BCDs are intended, some manufacturers use an F in the first halfbyte to mark negative numbers
+                byte = byte & 0x0F;
+                negative = true;
+              }
               value = (value * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
             }           
           } 
@@ -622,9 +634,14 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     }
     */
 
-	  if(buffer[index] == 0x0F ||buffer[index] == 0x1F){ // If last byte 1F/0F --> More records follow in next telegram
-          break;
-	  }	       
+    if(buffer[index] == 0x0F && buffer[index + 1] != 0x16){ // If last byte 0x0F --> Start of manufacturer specific data structures to end of user data --> nothing to decode
+      break;
+	  }	
+
+	if(buffer[index] == 0x1F && buffer[index + 1] != 0x16){ // If last byte 0x1F --> More records follow in next telegram
+      data["telegramFollow"] = 1;
+      break;
+	}	        
   }
 	return count;
 }
