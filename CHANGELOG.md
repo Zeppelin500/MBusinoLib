@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.14] - 2025-05-29
+
+### Changed
+
+- fix an issue if CRC is randomly a MDH (0Fh/1Fh)
+
 ## [0.9.13] - 2025-05-26
 
 ### Added

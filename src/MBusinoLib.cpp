@@ -634,16 +634,16 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     }
     */
 
-    if(buffer[index] == 0x0F && buffer[index + 1] != 0x16){ // If last byte 0x0F --> Start of manufacturer specific data structures to end of user data --> nothing to decode
+    if(buffer[index] == 0x0F && index != size){ // If last byte 0x0F --> Start of manufacturer specific data structures to end of user data --> nothing to decode
       break;
-	  }	
+	}	
 
-	if(buffer[index] == 0x1F && buffer[index + 1] != 0x16){ // If last byte 0x1F --> More records follow in next telegram
+	if(buffer[index] == 0x1F && index != size){ // If last byte 0x1F --> More records follow in next telegram
       data["telegramFollow"] = 1;
       break;
-	}	        
+	}	         
   }
-	return count;
+  return count;
 }
 
 const char * MBusinoLib::getCodeUnits(uint8_t code) {
