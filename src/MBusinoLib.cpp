@@ -327,7 +327,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
           else if(difLeast4bit == 2){  // TimePoint Date TypG 0010
             dataCodingType = 7;  
           }
-          strcpy(stringNameExtension, "_TimeSt.");
+          strcpy(stringNameExtension, "_TimeSt");
           noUnit = true;
         }
         else if(vifarray[extensionsCounter] == 0xFC || vifarray[extensionsCounter] == 0xFF){
