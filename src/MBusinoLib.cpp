@@ -290,6 +290,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     int8_t extensionScaler = 0; // additional scaler (x * 10 ^extensionScaler)
     double extensionAdditiveConstant = 0;
     char stringNameExtension[10] = {0}; //needed for VIF name extensions like L1,L2,L3 ans so on e.g: Voltage L1 
+    bool noUnit = false;
 
     if(vifcounter-1 > 0){
 
@@ -318,6 +319,16 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
           extensionAdditiveConstant = 1;
           for (int8_t i=0; i<extensionAdditiveConstantScaler; i++) extensionAdditiveConstant *= 10;
           for (int8_t i=extensionAdditiveConstantScaler; i<0; i++) extensionAdditiveConstant /= 10;
+        }
+        else if((vifarray[extensionsCounter] & 0x6A) == 0x6A){ // from table "Codes for Value Information Field Extension" E110 1f1b	Date (/time) of å ç (f,b: as above)
+          if(difLeast4bit == 4){  // TimePoint Date&Time TypF 0100
+            dataCodingType = 6;   
+          }
+          else if(difLeast4bit == 2){  // TimePoint Date TypG 0010
+            dataCodingType = 7;  
+          }
+          strcpy(stringNameExtension, "_TimeSt.");
+          noUnit = true;
         }
         else if(vifarray[extensionsCounter] == 0xFC || vifarray[extensionsCounter] == 0xFF){
           uint8_t vifExtensionBuffer = vifarray[extensionsCounter+1] & 0x7F;
@@ -613,7 +624,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     if(ifcustomVIF == true){
 		  data["units"] = String(customVIF);
 	  }
-    else if(getCodeUnits(vif_defs[def].code)!=0){
+    else if(getCodeUnits(vif_defs[def].code)!=0 && noUnit == false ){
       data["units"] = String(getCodeUnits(vif_defs[def].code));
     }
     data["name"] = String(getCodeName(vif_defs[def].code)+String(stringNameExtension)+String(stringFunctionField));
