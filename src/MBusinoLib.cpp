@@ -320,7 +320,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
           for (int8_t i=0; i<extensionAdditiveConstantScaler; i++) extensionAdditiveConstant *= 10;
           for (int8_t i=extensionAdditiveConstantScaler; i<0; i++) extensionAdditiveConstant /= 10;
         }
-        else if((vifarray[extensionsCounter] & 0x6A) == 0x6A){ // from table "Codes for Value Information Field Extension" E110 1f1b	Date (/time) of å ç (f,b: as above)
+        else if((vifarray[extensionsCounter] & 0x7A) == 0x6A){ // from table "Codes for Value Information Field Extension" E110 1f1b	Date (/time) of å ç (f,b: as above)
           if(difLeast4bit == 4){  // TimePoint Date&Time TypF 0100
             dataCodingType = 6;   
           }
