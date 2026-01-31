@@ -3,6 +3,14 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+Fix conditional check for VIFs in case of timestamps
+
+## [0.9.16] - 2026-01-31
+
+### Changed
+
+- Fix conditional check for VIFs in case of timestamps (caused in 0.9.15)
+
 ## [0.9.15] - 2025-08-11
 
 ### Added
