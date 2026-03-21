@@ -5,6 +5,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 Fix conditional check for VIFs in case of timestamps
 
+## [0.9.17] - 2026-03-21
+
+### Changed
+
+- Buffer overflow prevention: increased vifBuffer and charBuffer sizes by 1 byte
+- Typo fix: LUMINOUS_IDENSITY_CD → LUMINOUS_INTENSITY_CD
+- UNKNOWN_VIF no longer returns "total" as state_class
+- Formatting: unified indentation to 4 spaces
+
 ## [0.9.16] - 2026-01-31
 
 ### Changed
@@ -72,7 +81,7 @@ PARTICLES_PM1_1M3,
 PARTICLES_PM2_5_1M3,
 PARTICLES_PM10_1M3,
 ILLUMINANCE_LUX,
-LUMINOUS_IDENSITY_CD,
+LUMINOUS_INTENSITY_CD,
 RADIANT_FLUX_DENS,
 WIND_SPEED_M_S,
 RAINFALL_L_MM,
