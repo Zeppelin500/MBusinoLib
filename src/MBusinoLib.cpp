@@ -266,12 +266,13 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
         index = index - customVIFlen -1; // befor, we skipped the ASCII bytes to find the VIFEs, so we set the index back to reed the ASCII string
       }
       
-      char vifBuffer[customVIFlen];// = {0};    
-      for (uint8_t i = 0; i<=customVIFlen; i++) { // reeding the ASCII string ...
-        vifBuffer[customVIFlen-i] = buffer[index-vifcounter + 1]; 
+      char vifBuffer[customVIFlen + 1] = {0};    
+      for (uint8_t i = 0; i < customVIFlen; i++) { // reeding the ASCII string ...
+        vifBuffer[customVIFlen - 1 - i] = buffer[index - vifcounter + 1]; 
 				index++;
       }  
-      strncpy(customVIF, vifBuffer,customVIFlen ); // ... and copy it to our variable
+      strncpy(customVIF, vifBuffer, customVIFlen); // ... and copy it to our variable
+      customVIF[customVIFlen] = '\0';
 			ifcustomVIF = true;	
     }
 
