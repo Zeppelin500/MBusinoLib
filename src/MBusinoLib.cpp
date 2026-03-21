@@ -61,123 +61,123 @@ uint8_t MBusinoLib::getError() {
 
 uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 
-	uint8_t count = 0;
-	uint8_t index = 0;
-	
-	while (index < size) {
-
-    	count++;
-
-    	// Decode DIF
-    	uint8_t dif = buffer[index++];
-    	uint8_t difLeast4bit = (dif & 0x0F);
-		  uint8_t difFunctionField = ((dif & 0x30) >> 4);
-    	uint8_t len = 0;
-    	uint8_t dataCodingType = 0;
-    	/*
-    	0 -->   no Data
-    	1 -->   integer
-    	2 -->   bcd
-    	3 -->   real
-    	4 -->   variable lengs
-    	5 -->   special functions
-    	6 -->   TimePoint Date&Time Typ F
-    	7 -->   TimePoint Date Typ G
-
-    	Length in Bit	Code	    Meaning	        Code	Meaning
-    	0	            0000	    No data	        1000	Selection for Readout
-    	8	            0001	    8 Bit Integer	1001	2 digit BCD
-    	16	            0010	    16 Bit Integer	1010	4 digit BCD
-    	24	            0011	    24 Bit Integer	1011	6 digit BCD
-    	32	            0100	    32 Bit Integer	1100	8 digit BCD
-    	32 / N	        0101	    32 Bit Real	    1101	variable length
-    	48	            0110	    48 Bit Integer	1110	12 digit BCD
-    	64	            0111	    64 Bit Integer	1111	Special Functions 
-    	*/
+    uint8_t count = 0;
+    uint8_t index = 0;
     
-    	switch(difLeast4bit){
-        	case 0x00:  //No data
-            	len = 0;
-            	dataCodingType = 0;
-            	break;        
-        	case 0x01:  //0001	    8 Bit Integer
-            	len = 1;
-            	dataCodingType = 1;
-            	break;
-        	case 0x02:  //0010	    16 Bit Integer
-            	len = 2;
-            	dataCodingType = 1;
-            	break;
-        	case 0x03:  //0011	    24 Bit Integer
-            	len = 3;
-            	dataCodingType = 1;
-            	break;
-        	case 0x04:  //0100	    32 Bit Integer
-            	len = 4;
-            	dataCodingType = 1;
-            	break;
-        	case 0x05:  //0101	    32 Bit Real
-            	len = 4;
-            	dataCodingType = 3;
-            	break;        
-        	case 0x06:  //0110	    48 Bit Integer
-            	len = 6;
-            	dataCodingType = 1;
-            	break; 
-        	case 0x07:  //0111	    64 Bit Integer
-            	len = 8;
-            	dataCodingType = 1;
-            	break;
-        	case 0x08:  //not supported
-            	len = 0;
-            	dataCodingType = 0;
-            	break;
-        	case 0x09:  //1001 2 digit BCD
-            	len = 1;
-            	dataCodingType = 2;
-            	break;
-        	case 0x0A:  //1010 4 digit BCD
-            	len = 2;
-            	dataCodingType = 2;
-            	break;
-        	case 0x0B:  //1011 6 digit BCD
-            	len = 3;
-            	dataCodingType = 2;
-            	break;
-        	case 0x0C:  //1100 8 digit BCD
-            	len = 4;
-            	dataCodingType = 2;
-            	break;
-        	case 0x0D:  //1101	variable length
-            	len = 0;
-            	dataCodingType = 4;
-            	break;
-        	case 0x0E:  //1110	12 digit BCD
-            	len = 6;
-            	dataCodingType = 2;
-            	break;
-        	case 0x0F:  //1111	Special Functions
-            	len = 0;
-            	dataCodingType = 5;
-            	break;
-    	}
-		char stringFunctionField[5];
-		switch(difFunctionField){
-			case 0:
-				strcpy(stringFunctionField, ""); //current
-				break;
-			case 1:
-				strcpy(stringFunctionField, "_max");
-				break;
-			case 2:
-				strcpy(stringFunctionField, "_min");
-				break;
-			case 3:
-				strcpy(stringFunctionField, "_err");
-				break;
-		}
-			
-			
+    while (index < size) {
+
+        count++;
+
+        // Decode DIF
+        uint8_t dif = buffer[index++];
+        uint8_t difLeast4bit = (dif & 0x0F);
+          uint8_t difFunctionField = ((dif & 0x30) >> 4);
+        uint8_t len = 0;
+        uint8_t dataCodingType = 0;
+        /*
+        0 -->   no Data
+        1 -->   integer
+        2 -->   bcd
+        3 -->   real
+        4 -->   variable lengs
+        5 -->   special functions
+        6 -->   TimePoint Date&Time Typ F
+        7 -->   TimePoint Date Typ G
+
+        Length in Bit   Code        Meaning         Code    Meaning
+        0               0000        No data         1000    Selection for Readout
+        8               0001        8 Bit Integer   1001    2 digit BCD
+        16              0010        16 Bit Integer  1010    4 digit BCD
+        24              0011        24 Bit Integer  1011    6 digit BCD
+        32              0100        32 Bit Integer  1100    8 digit BCD
+        32 / N          0101        32 Bit Real     1101    variable length
+        48              0110        48 Bit Integer  1110    12 digit BCD
+        64              0111        64 Bit Integer  1111    Special Functions 
+        */
+    
+        switch(difLeast4bit){
+            case 0x00:  //No data
+                len = 0;
+                dataCodingType = 0;
+                break;        
+            case 0x01:  //0001      8 Bit Integer
+                len = 1;
+                dataCodingType = 1;
+                break;
+            case 0x02:  //0010      16 Bit Integer
+                len = 2;
+                dataCodingType = 1;
+                break;
+            case 0x03:  //0011      24 Bit Integer
+                len = 3;
+                dataCodingType = 1;
+                break;
+            case 0x04:  //0100      32 Bit Integer
+                len = 4;
+                dataCodingType = 1;
+                break;
+            case 0x05:  //0101      32 Bit Real
+                len = 4;
+                dataCodingType = 3;
+                break;        
+            case 0x06:  //0110      48 Bit Integer
+                len = 6;
+                dataCodingType = 1;
+                break; 
+            case 0x07:  //0111      64 Bit Integer
+                len = 8;
+                dataCodingType = 1;
+                break;
+            case 0x08:  //not supported
+                len = 0;
+                dataCodingType = 0;
+                break;
+            case 0x09:  //1001 2 digit BCD
+                len = 1;
+                dataCodingType = 2;
+                break;
+            case 0x0A:  //1010 4 digit BCD
+                len = 2;
+                dataCodingType = 2;
+                break;
+            case 0x0B:  //1011 6 digit BCD
+                len = 3;
+                dataCodingType = 2;
+                break;
+            case 0x0C:  //1100 8 digit BCD
+                len = 4;
+                dataCodingType = 2;
+                break;
+            case 0x0D:  //1101  variable length
+                len = 0;
+                dataCodingType = 4;
+                break;
+            case 0x0E:  //1110  12 digit BCD
+                len = 6;
+                dataCodingType = 2;
+                break;
+            case 0x0F:  //1111  Special Functions
+                len = 0;
+                dataCodingType = 5;
+                break;
+        }
+        char stringFunctionField[5];
+        switch(difFunctionField){
+            case 0:
+                strcpy(stringFunctionField, ""); //current
+                break;
+            case 1:
+                strcpy(stringFunctionField, "_max");
+                break;
+            case 2:
+                strcpy(stringFunctionField, "_min");
+                break;
+            case 3:
+                strcpy(stringFunctionField, "_err");
+                break;
+        }
+            
+            
     // handle DIFE
     uint16_t storageNumber = 0;
     if((dif & 0x40) == 0x40){
@@ -189,8 +189,8 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     while(ifDife) {        
         difeNumber ++;
         dife[difeNumber] = buffer[index];
-      	ifDife = false;
-      	ifDife = ((buffer[index] & 0x80) == 0x80); //check if after the DIFE another DIFE is following 
+        ifDife = false;
+        ifDife = ((buffer[index] & 0x80) == 0x80); //check if after the DIFE another DIFE is following 
         index++;
     } 
     uint8_t subUnit = 0;
@@ -218,7 +218,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     uint8_t vifes = 0;
     uint8_t customVIFlen = 0;
     char customVIF[20] = {0}; 
-		bool ifcustomVIF = false;	
+        bool ifcustomVIF = false;   
     uint8_t firstVifeExtension = 1; //8.4.5 Codes for Value Information Field Extension (VIFE)
 
     do { // copy the VIF(E)s to an array for later analysys and the variable vif for the devinition 
@@ -266,13 +266,13 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
         index = index - customVIFlen -1; // befor, we skipped the ASCII bytes to find the VIFEs, so we set the index back to reed the ASCII string
       }
       
-      char vifBuffer[customVIFlen];// = {0};    
+      char vifBuffer[customVIFlen + 1];// = {0};    
       for (uint8_t i = 0; i<=customVIFlen; i++) { // reeding the ASCII string ...
         vifBuffer[customVIFlen-i] = buffer[index-vifcounter + 1]; 
-				index++;
+                index++;
       }  
       strncpy(customVIF, vifBuffer,customVIFlen ); // ... and copy it to our variable
-			ifcustomVIF = true;	
+            ifcustomVIF = true; 
     }
 
     vif = (vif & 0xFFFFFF7F); // delete the leeding zero of the last vif byte, if additional vifes follow, to find the right definition
@@ -283,7 +283,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
       _error = MBUS_ERROR::UNSUPPORTED_VIF;
       def = 0; 
       //return 0; 
-    }	  
+    }     
 
     //find VIF extensions like the table 8.4.5 Codes for Value Information Field Extension (VIFE) ---------------------------------------------------------------
 
@@ -307,20 +307,20 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
       uint8_t extensionsCounter = firstVifeExtension;
 
       do{
-        if((vifarray[extensionsCounter] & 0x7F) == 0x7D){ // from table "Codes for Value Information Field Extension" E111 1101	Multiplicative correction factor: 1000
+        if((vifarray[extensionsCounter] & 0x7F) == 0x7D){ // from table "Codes for Value Information Field Extension" E111 1101 Multiplicative correction factor: 1000
           extensionScaler = 3; // x1000
         }
-        else if((vifarray[extensionsCounter] & 0x78) == 0x70){ // from table "Codes for Value Information Field Extension" E111 0nnn	Multiplicative correction factor: 10nnn-6
+        else if((vifarray[extensionsCounter] & 0x78) == 0x70){ // from table "Codes for Value Information Field Extension" E111 0nnn    Multiplicative correction factor: 10nnn-6
           extensionScaler = (vifarray[extensionsCounter] & 7) - 6;
         }
-        else if((vifarray[extensionsCounter] & 0x7C) == 0x78){ // from table "Codes for Value Information Field Extension" E111 10nn	Additive correction constant: 10nn-3 • unit of VIF (offset)
+        else if((vifarray[extensionsCounter] & 0x7C) == 0x78){ // from table "Codes for Value Information Field Extension" E111 10nn    Additive correction constant: 10nn-3 • unit of VIF (offset)
           int8_t extensionAdditiveConstantScaler = 0;
           extensionAdditiveConstantScaler = (vifarray[extensionsCounter] & 3) - 3;
           extensionAdditiveConstant = 1;
           for (int8_t i=0; i<extensionAdditiveConstantScaler; i++) extensionAdditiveConstant *= 10;
           for (int8_t i=extensionAdditiveConstantScaler; i<0; i++) extensionAdditiveConstant /= 10;
         }
-        else if((vifarray[extensionsCounter] & 0x7A) == 0x6A){ // from table "Codes for Value Information Field Extension" E110 1f1b	Date (/time) of å ç (f,b: as above)
+        else if((vifarray[extensionsCounter] & 0x7A) == 0x6A){ // from table "Codes for Value Information Field Extension" E110 1f1b    Date (/time) of å ç (f,b: as above)
           if(difLeast4bit == 4){  // TimePoint Date&Time TypF 0100
             dataCodingType = 6;   
           }
@@ -384,16 +384,16 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
     }
   
     // read value
-    int16_t value16 = 0;  	// int16_t to notice negative values at 2 byte data
-    int32_t value32 = 0;	// int32_t to notice negative values at 4 byte data	  
+    int16_t value16 = 0;    // int16_t to notice negative values at 2 byte data
+    int32_t value32 = 0;    // int32_t to notice negative values at 4 byte data   
     int64_t value = 0;
 
     float valueFloat = 0; //real value
-	  
-	  
-	  uint8_t date[len]; // ={0};
-	  char datestring[16] = {0}; //needed for simple formatted dates 
-	  char datestring2[30] = {0};//needed for extensive formatted dates
+      
+      
+      uint8_t date[len]; // ={0};
+      char datestring[16] = {0}; //needed for simple formatted dates 
+      char datestring2[30] = {0};//needed for extensive formatted dates
     char valueString [30] = {0}; // contain the ASCII value at variable length ascii values and formatted dates
     bool switchAgain = false; // repeat the switch(dataCodingType) at variable length coding
     bool negative = false;  // set a negative flag for negate the value
@@ -415,9 +415,9 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
           else if(len==4){
             for (uint8_t i = 0; i<len; i++) {
               value32 = (value32 << 8) + buffer[index + len - i - 1];
-            }	
+            }   
             value = (int64_t)value32;
-          }			
+          }         
           else{
             for (uint8_t i = 0; i<len; i++) {
               value = (value << 8) + buffer[index + len - i - 1];
@@ -445,7 +445,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
               }
               value32 = (value32 * 100) + ((byte >> 4) * 10) + (byte & 0x0F);
             }
-            value = (int64_t)value32;				 
+            value = (int64_t)value32;                
           }
           else{
             for (uint8_t i = 0; i<len; i++) {
@@ -483,12 +483,12 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
           if(buffer[index] >= 0x00 && buffer[index] <= 0xBF){ //ASCII string with LVAR characters
             len = buffer[index];
             index ++;
-            char charBuffer[len]; // = {0};        
+            char charBuffer[len + 1]; // = {0};        
             for (uint8_t i = 0; i<=len; i++) { // evtl das "=" löschen
               charBuffer[i] = buffer[index + (len-i-1)]; 
             }  
             strncpy(valueString, charBuffer,len );  
-            asciiValue = 1;	
+            asciiValue = 1; 
           }
           else if(buffer[index] >= 0xC0 && buffer[index] <= 0xCF){ //positive BCD number with (LVAR - C0h) • 2 digits
             len = buffer[index] - 0xC0;
@@ -527,7 +527,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
         case 6:    //TimePoint Date&Time Typ F
           for (uint8_t i = 0; i<len; i++) {
             date[i] =  buffer[index + i];
-          }            			
+          }                     
           if ((date[0] & 0x80) != 0) {    // Time valid ?
             //out_len = snprintf(output, output_size, "invalid");
             break;
@@ -546,10 +546,10 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
             date[2] & 0x1F, // mday
             date[1] & 0x1F, // hour
             date[0] & 0x3F // min
-          );	
+          );    
           value = atof( datestring);
           strcpy(valueString, datestring2);
-          asciiValue = 2;	
+          asciiValue = 2;   
           break;
         case 7:    //TimePoint Date Typ G
           for (uint8_t i = 0; i<len; i++) {
@@ -569,10 +569,10 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
             ((date[0] & 0xE0) >> 5) | ((date[1] & 0xF0) >> 1), // year
             date[1] & 0x0F, // mon
             date[0] & 0x1F  // mday
-          );			
+          );            
           value = atof( datestring);
           strcpy(valueString, datestring2);
-          asciiValue = 2;	
+          asciiValue = 2;   
           break;
         default:
           break;
@@ -583,7 +583,7 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 
     // scaled value
     double scaled = 0;
-    int8_t scalar = 0;	
+    int8_t scalar = 0;  
     if(def != 0){ // with unknown vif (def 0) we cant set the scalar
       scalar = vif_defs[def].scalar + vif - vif_defs[def].base + extensionScaler;
     } 
@@ -622,8 +622,8 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
       data["value_string"] = String(valueString); 
     }
     if(ifcustomVIF == true){
-		  data["units"] = String(customVIF);
-	  }
+          data["units"] = String(customVIF);
+      }
     else if(getCodeUnits(vif_defs[def].code)!=0 && noUnit == false ){
       data["units"] = String(getCodeUnits(vif_defs[def].code));
     }
@@ -647,12 +647,12 @@ uint8_t MBusinoLib::decode(uint8_t *buffer, uint8_t size, JsonArray& root) {
 
     if(buffer[index] == 0x0F && index != size){ // If last byte 0x0F --> Start of manufacturer specific data structures to end of user data --> nothing to decode
       break;
-	}	
+    }   
 
-	if(buffer[index] == 0x1F && index != size){ // If last byte 0x1F --> More records follow in next telegram
+    if(buffer[index] == 0x1F && index != size){ // If last byte 0x1F --> More records follow in next telegram
       data["telegramFollow"] = 1;
       break;
-	}	         
+    }            
   }
   return count;
 }
@@ -814,7 +814,7 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
     case MBUS_CODE::ILLUMINANCE_LUX:
       return "lx"; 
 
-    case MBUS_CODE::LUMINOUS_IDENSITY_CD:
+    case MBUS_CODE::LUMINOUS_INTENSITY_CD:
       return "cd"; 
 
     case MBUS_CODE::RADIANT_FLUX_DENS:
@@ -1075,7 +1075,7 @@ const char * MBusinoLib::getCodeName(uint8_t code) {
     case MBUS_CODE::ILLUMINANCE_LUX:
       return "illuminance"; 
 
-    case MBUS_CODE::LUMINOUS_IDENSITY_CD:
+    case MBUS_CODE::LUMINOUS_INTENSITY_CD:
       return "luminus_idensity"; 
 
     case MBUS_CODE::RADIANT_FLUX_DENS:
@@ -1292,7 +1292,7 @@ const char * MBusinoLib::getDeviceClass(uint8_t code) {
     case MBUS_CODE::PARTICLES_PM10_UG_M3:
     case MBUS_CODE::PARTICLES_PM10_1M3:    
     case MBUS_CODE::ILLUMINANCE_LUX:
-    case MBUS_CODE::LUMINOUS_IDENSITY_CD:
+    case MBUS_CODE::LUMINOUS_INTENSITY_CD:
     case MBUS_CODE::RADIANT_FLUX_DENS:
     case MBUS_CODE::WIND_SPEED_M_S:
     case MBUS_CODE::RAINFALL_L_MM:
@@ -1358,9 +1358,10 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::PHASE_CURR_DEG:    
       return "measurement";
 
+    case MBUS_CODE::UNKNOWN_VIF:    
+      return "";  // unknown VIFs should not have a state class
     case MBUS_CODE::ENERGY_WH:
     case MBUS_CODE::ENERGY_J:   
-    case MBUS_CODE::UNKNOWN_VIF:    
     case MBUS_CODE::VOLUME_M3: 
     case MBUS_CODE::VOLUME_FT3:
     case MBUS_CODE::VOLUME_GAL: 
@@ -1430,7 +1431,7 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::PARTICLES_PM10_UG_M3:
     case MBUS_CODE::PARTICLES_PM10_1M3:    
     case MBUS_CODE::ILLUMINANCE_LUX:
-    case MBUS_CODE::LUMINOUS_IDENSITY_CD:
+    case MBUS_CODE::LUMINOUS_INTENSITY_CD:
     case MBUS_CODE::RADIANT_FLUX_DENS:
     case MBUS_CODE::WIND_SPEED_M_S:
     case MBUS_CODE::RAINFALL_L_MM:
