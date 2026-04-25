@@ -108,7 +108,7 @@ Usage example:
 ```c
 MBusinoLib decode;
 
-StaticJsonDocument<512> headerDoc;
+JsonDocument headerDoc;
 JsonObject headerObj = headerDoc.to<JsonObject>();
 
 int packet_size = mbus_data[1] + 6;
