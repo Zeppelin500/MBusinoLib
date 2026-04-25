@@ -18,11 +18,12 @@ getBuffer KEYWORD2
 copy KEYWORD2
 getError KEYWORD2
 
-addRaw KEYWORD2
-addField KEYWORD2
-
-decode KEYWORD2
+decodeRecords KEYWORD2
+decodeHeader KEYWORD2
+getCodeName KEYWORD2
 getCodeUnits KEYWORD2
+getDeviceClass KEYWORD2
+getStateClass KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

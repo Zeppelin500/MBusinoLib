@@ -3,6 +3,13 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.19] - 2026-04-25
+
+### Changed
+
+- Renamed `decode()` to `decodeRecords()` for clarity (old name kept as deprecated wrapper)
+- Renamed `decodeHeaderLong()` to `decodeHeader()` ("Long" was redundant)
+
 ## [0.9.18] - 2026-04-23
 
 ### Added

@@ -1,6 +1,6 @@
 # MBusinoLib - an Arduino M-Bus Decoder Library
 
-[![version](https://img.shields.io/badge/version-0.9.18-brightgreen.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.9.19-brightgreen.svg)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](LICENSE)
 
 
@@ -26,29 +26,27 @@ Thanks to **HWHardsoft** and **TrystanLea** for the M-Bus communication for MBus
 
 ### Class: `MBusinoLib`
 
-Include and instantiate the MBusinoLib class. The constructor takes the size of the allocated buffer.
+Include and instantiate the MBusinoLib class:
 
 ```c
 #include <MBusinoLib.h>
 
-MBusinoLib payload(uint8_t size);
+MBusinoLib decode;
 ```
-
-- `uint8_t size`: The maximum payload size to send, e.g. `254`
 
 ## Decoding
 
-### Method: `decode`
+### Method: `decodeRecords`
 
 Decodes payload of a whole M-Bus telegram as byte array into a JsonArray (requires ArduinoJson library). The result is an array of objects. The method call returns the number of decoded fields or 0 if error.
 
 ```c
-uint8_t decode(uint8_t *buffer, uint8_t size, JsonArray& root);
+uint8_t decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root);
 ```
 
 same line from the example
 ```c
-uint8_t fields = payload.decode(&mbus_data[Startadd], packet_size - Startadd - 2, root); 
+uint8_t fields = decode.decodeRecords(&mbus_data[Startadd], packet_size - Startadd - 2, root); 
 ```
 
 Example JSON output:
@@ -94,12 +92,12 @@ There are more records available but you have to delete the out comment in the l
 * **["value_raw"]** contains the raw value
 
 
-### Method: `decodeHeaderLong`
+### Method: `decodeHeader`
 
 Decodes the header of an M-Bus Long Frame telegram into a JsonObject (requires ArduinoJson library). Returns `true` on success, `false` on error.
 
 ```c
-bool decodeHeaderLong(const uint8_t* buffer, size_t length, JsonObject& json);
+bool decodeHeader(const uint8_t* buffer, size_t length, JsonObject& json);
 ```
 
 - `const uint8_t* buffer`: Pointer to the raw M-Bus telegram (complete frame including start/stop bytes)
@@ -108,14 +106,14 @@ bool decodeHeaderLong(const uint8_t* buffer, size_t length, JsonObject& json);
 
 Usage example:
 ```c
-MBusinoLib payload(254);
+MBusinoLib decode;
 
 StaticJsonDocument<512> headerDoc;
 JsonObject headerObj = headerDoc.to<JsonObject>();
 
 int packet_size = mbus_data[1] + 6;
 
-if (payload.decodeHeaderLong(mbus_data, packet_size, headerObj)) {
+if (decode.decodeHeader(mbus_data, packet_size, headerObj)) {
     const char* meterId = headerObj["id"].as<const char*>();
     const char* manufacturer = headerObj["manufacturer"].as<const char*>();
     const char* medium = headerObj["medium"].as<const char*>();
