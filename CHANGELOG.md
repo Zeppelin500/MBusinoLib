@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Renamed `decode()` to `decodeRecords()` for clarity (old name kept as deprecated wrapper)
 - Renamed `decodeHeaderLong()` to `decodeHeader()` ("Long" was redundant)
+- revised Example
 
 ## [0.9.18] - 2026-04-23
 
