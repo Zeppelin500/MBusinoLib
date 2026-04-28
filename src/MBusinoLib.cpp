@@ -1520,7 +1520,7 @@ bool MBusinoLib::decodeHeader(const uint8_t* buffer, size_t length, JsonObject& 
     // Extract basic header fields
     json["len"] = buffer[1];
     json["c_field"] = buffer[4];
-    json["a_field"] = buffer[5];
+    json["address"] = buffer[5];
     json["ci_field"] = buffer[6];
 
     // Check if the CI field indicates a variable data structure (0x72 or 0x76)

@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.20] - 2026-04-28
+
+### Changed
+
+- Renamed `a_field` to `address` in `decodeHeader()` JSON output
+
 ## [0.9.19] - 2026-04-25
 
 ### Changed
