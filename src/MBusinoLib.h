@@ -381,7 +381,7 @@ public:
 
   const char * getCodeName(uint8_t code);
   const char * getCodeUnits(uint8_t code);
-  const char * getDeviceClass(uint8_t code);
+  const char * getDeviceClass(uint8_t code, uint8_t medium = 0xFF);
   const char * getStateClass(uint8_t code);
 
   bool decodeHeader(const uint8_t* buffer, size_t length, JsonObject& json);
