@@ -824,7 +824,7 @@ const char * MBusinoLib::getCodeUnits(uint8_t code) {
       return "m/s"; 
 
     case MBUS_CODE::RAINFALL_L_MM:
-      return "l/mm²"; 
+      return "mm"; 
 
     case MBUS_CODE::FORMAZIN_NEPHELOMETER_U:
       return "FNU"; 
@@ -1306,6 +1306,9 @@ const char * MBusinoLib::getDeviceClass(uint8_t code, uint8_t medium) {
     case MBUS_CODE::PARTICLES_PM10_UG_M3:
       return "pm10";
 
+    case MBUS_CODE::RAINFALL_L_MM:
+      return "precipitation";
+
     // No matching Home Assistant device_class (unknown unit or no HA class).
     // Left empty on purpose - users can add a template sensor if they need one.
     case MBUS_CODE::MASS_FLOW_KG_H:
@@ -1352,7 +1355,6 @@ const char * MBusinoLib::getDeviceClass(uint8_t code, uint8_t medium) {
     case MBUS_CODE::PARTICLES_PM2_5_1M3:
     case MBUS_CODE::PARTICLES_PM10_1M3:
     case MBUS_CODE::LUMINOUS_INTENSITY_CD:
-    case MBUS_CODE::RAINFALL_L_MM:
     case MBUS_CODE::FORMAZIN_NEPHELOMETER_U:
     case MBUS_CODE::DISMOUNTS_COUNTER:
     case MBUS_CODE::TEST_BUTTON_COUNTER:
@@ -1389,6 +1391,7 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::VOLUME_FT3:
     case MBUS_CODE::VOLUME_GAL:
     case MBUS_CODE::REACTIVE_ENERGY:
+    case MBUS_CODE::RAINFALL_L_MM:
     case MBUS_CODE::OPERATING_TIME_S:
     case MBUS_CODE::OPERATING_TIME_MIN:
     case MBUS_CODE::OPERATING_TIME_H:
@@ -1457,7 +1460,6 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::PARTICLES_PM10_UG_M3:
     case MBUS_CODE::PARTICLES_PM10_1M3:
     case MBUS_CODE::LUMINOUS_INTENSITY_CD:
-    case MBUS_CODE::RAINFALL_L_MM:
     case MBUS_CODE::FORMAZIN_NEPHELOMETER_U:
     case MBUS_CODE::DISTANCE_MM:
     case MBUS_CODE::DECIBEL_A:
@@ -1467,7 +1469,7 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::UNKNOWN_VIF:
       return "";  // unknown VIFs should not have a state class
 
-    // Metadata / status / counters: unchanged behaviour.
+    // Metadata / status / counters: no meaningful state class.
     case MBUS_CODE::TIME_POINT_DATE:
     case MBUS_CODE::TIME_POINT_DATETIME:
     case MBUS_CODE::FABRICATION_NUMBER:
@@ -1513,7 +1515,7 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::CO_ALARM_STATUS:
     case MBUS_CODE::HEAT_ALARM_STATUS:
     case MBUS_CODE::DOOR_WINDOW_SENS_STATUS:
-      return "total";
+      return "";
     default:
         break;
 
