@@ -1159,7 +1159,27 @@ const char * MBusinoLib::getCodeName(uint8_t code) {
 
 }
 
-const char * MBusinoLib::getDeviceClass(uint8_t code) {
+// Maps the M-Bus medium byte (header, e.g. json["medium_code"] from
+// decodeHeader) to the matching Home Assistant device_class for cumulative
+// volume records. Water media -> "water", Gas -> "gas"; anything else
+// (incl. unset 0xFF) falls back to the generic "volume" so the library stays
+// universal (e.g. heat meters, cooling meters).
+static const char * _volumeClassFromMedium(uint8_t medium) {
+  switch (medium) {
+    case 0x03:                  // Gas
+      return "gas";
+    case 0x06:                  // Warm Water
+    case 0x07:                  // Water
+    case 0x15:                  // Hot water
+    case 0x16:                  // Cold water
+    case 0x17:                  // Dual water
+      return "water";
+    default:                    // unknown / not a water or gas medium
+      return "volume";
+  }
+}
+
+const char * MBusinoLib::getDeviceClass(uint8_t code, uint8_t medium) {
   switch (code) {
 
     case MBUS_CODE::ENERGY_WH:
@@ -1169,7 +1189,7 @@ const char * MBusinoLib::getDeviceClass(uint8_t code) {
     case MBUS_CODE::VOLUME_M3: 
     case MBUS_CODE::VOLUME_FT3:
     case MBUS_CODE::VOLUME_GAL: 
-      return "volume";
+      return _volumeClassFromMedium(medium);
 
     case MBUS_CODE::MASS_KG: 
       return "weight";
