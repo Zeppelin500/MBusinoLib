@@ -1183,25 +1183,25 @@ const char * MBusinoLib::getDeviceClass(uint8_t code, uint8_t medium) {
   switch (code) {
 
     case MBUS_CODE::ENERGY_WH:
-    case MBUS_CODE::ENERGY_J: 
+    case MBUS_CODE::ENERGY_J:
       return "energy";
-    
-    case MBUS_CODE::VOLUME_M3: 
+
+    case MBUS_CODE::VOLUME_M3:
     case MBUS_CODE::VOLUME_FT3:
-    case MBUS_CODE::VOLUME_GAL: 
+    case MBUS_CODE::VOLUME_GAL:
       return _volumeClassFromMedium(medium);
 
-    case MBUS_CODE::MASS_KG: 
+    case MBUS_CODE::MASS_KG:
       return "weight";
 
-    case MBUS_CODE::OPERATING_TIME_S: 
-    case MBUS_CODE::OPERATING_TIME_MIN: 
-    case MBUS_CODE::OPERATING_TIME_H: 
-    case MBUS_CODE::OPERATING_TIME_DAYS: 
-    case MBUS_CODE::ON_TIME_S: 
-    case MBUS_CODE::ON_TIME_MIN: 
-    case MBUS_CODE::ON_TIME_H: 
-    case MBUS_CODE::ON_TIME_DAYS: 
+    case MBUS_CODE::OPERATING_TIME_S:
+    case MBUS_CODE::OPERATING_TIME_MIN:
+    case MBUS_CODE::OPERATING_TIME_H:
+    case MBUS_CODE::OPERATING_TIME_DAYS:
+    case MBUS_CODE::ON_TIME_S:
+    case MBUS_CODE::ON_TIME_MIN:
+    case MBUS_CODE::ON_TIME_H:
+    case MBUS_CODE::ON_TIME_DAYS:
     case MBUS_CODE::AVG_DURATION_S:
     case MBUS_CODE::AVG_DURATION_MIN:
     case MBUS_CODE::AVG_DURATION_H:
@@ -1213,111 +1213,147 @@ const char * MBusinoLib::getDeviceClass(uint8_t code, uint8_t medium) {
       return "duration";
 
     case MBUS_CODE::POWER_W:
-    case MBUS_CODE::MAX_POWER_W: 
-    case MBUS_CODE::POWER_J_H: 
+    case MBUS_CODE::MAX_POWER_W:
       return "power";
-      
-    case MBUS_CODE::VOLUME_FLOW_M3_H: 
+
+    case MBUS_CODE::VOLUME_FLOW_M3_H:
     case MBUS_CODE::VOLUME_FLOW_M3_MIN:
-    case MBUS_CODE::VOLUME_FLOW_M3_S: 
-    case MBUS_CODE::VOLUME_FLOW_GAL_M: 
-    case MBUS_CODE::VOLUME_FLOW_GAL_H: 
+    case MBUS_CODE::VOLUME_FLOW_M3_S:
+    case MBUS_CODE::VOLUME_FLOW_GAL_M:
+    case MBUS_CODE::VOLUME_FLOW_GAL_H:
       return "volume_flow_rate";
 
-    case MBUS_CODE::MASS_FLOW_KG_H: // no Unit or device Class in HA defind
-      return "";
-
-    case MBUS_CODE::FLOW_TEMPERATURE_C: 
+    case MBUS_CODE::FLOW_TEMPERATURE_C:
     case MBUS_CODE::FLOW_TEMPERATURE_F:
-    case MBUS_CODE::RETURN_TEMPERATURE_C: 
+    case MBUS_CODE::RETURN_TEMPERATURE_C:
     case MBUS_CODE::RETURN_TEMPERATURE_F:
-    case MBUS_CODE::EXTERNAL_TEMPERATURE_C: 
+    case MBUS_CODE::EXTERNAL_TEMPERATURE_C:
     case MBUS_CODE::EXTERNAL_TEMPERATURE_F:
     case MBUS_CODE::TEMPERATURE_LIMIT_C:
     case MBUS_CODE::TEMPERATURE_LIMIT_F:
-    case MBUS_CODE::TEMPERATURE_DIFF_K: 
-    case MBUS_CODE::TEMPERATURE_DIFF_F:
       return "temperature";
 
-    case MBUS_CODE::PRESSURE_BAR: 
-      return "pressure";
+    case MBUS_CODE::TEMPERATURE_DIFF_K:
+    case MBUS_CODE::TEMPERATURE_DIFF_F:
+      return "temperature_delta";
 
-    case MBUS_CODE::TIME_POINT_DATE:
-    case MBUS_CODE::TIME_POINT_DATETIME:
-      return "";
+    case MBUS_CODE::PRESSURE_BAR:
+      return "pressure";
 
     case MBUS_CODE::BAUDRATE_BPS:
       return "data_rate";
 
-    case MBUS_CODE::VOLTS: 
+    case MBUS_CODE::VOLTS:
       return "voltage";
 
-    case MBUS_CODE::AMPERES: 
+    case MBUS_CODE::AMPERES:
       return "current";
 
     case MBUS_CODE::RELATIVE_HUMIDITY:
-      return "humidity";      
+      return "humidity";
 
     case MBUS_CODE::FREQUENCY:
-      return "frequency";    
+      return "frequency";
 
+    case MBUS_CODE::APPARENT_POWER:
+      return "apparent_power";
+
+    case MBUS_CODE::REACTIVE_POWER:
+      return "reactive_power";
+
+    case MBUS_CODE::REACTIVE_ENERGY:
+      return "reactive_energy";
+
+    case MBUS_CODE::BATTERY_PERCENTAGE:
+      return "battery";
+
+    case MBUS_CODE::MOISTURE_LEVEL_PERCENT:
+      return "moisture";
+
+    case MBUS_CODE::ILLUMINANCE_LUX:
+      return "illuminance";
+
+    case MBUS_CODE::RADIANT_FLUX_DENS:
+      return "irradiance";
+
+    case MBUS_CODE::WIND_SPEED_M_S:
+      return "wind_speed";
+
+    case MBUS_CODE::POTENTIAL_HYDROGEN_PH:
+      return "ph";
+
+    case MBUS_CODE::DISTANCE_MM:
+      return "distance";
+
+    case MBUS_CODE::DECIBEL_A:
+      return "sound_pressure";
+
+    case MBUS_CODE::CARBON_DIOXIDE_PPM:
+      return "carbon_dioxide";
+
+    case MBUS_CODE::CARBON_MONOXIDE_PPM:
+      return "carbon_monoxide";
+
+    case MBUS_CODE::VOLATILE_ORG_COMP_UG_M3:
+      return "volatile_organic_compounds";
+
+    case MBUS_CODE::PARTICLES_PM1_UG_M3:
+      return "pm1";
+
+    case MBUS_CODE::PARTICLES_PM2_5_UG_M3:
+      return "pm25";
+
+    case MBUS_CODE::PARTICLES_PM10_UG_M3:
+      return "pm10";
+
+    // No matching Home Assistant device_class (unknown unit or no HA class).
+    // Left empty on purpose - users can add a template sensor if they need one.
+    case MBUS_CODE::MASS_FLOW_KG_H:
+    case MBUS_CODE::POWER_J_H:
+    case MBUS_CODE::TIME_POINT_DATE:
+    case MBUS_CODE::TIME_POINT_DATETIME:
     case MBUS_CODE::UNKNOWN_VIF:
-    case MBUS_CODE::FABRICATION_NUMBER: 
-    case MBUS_CODE::BUS_ADDRESS: 
-    case MBUS_CODE::CREDIT: 
-    case MBUS_CODE::DEBIT: 
-    case MBUS_CODE::ACCESS_NUMBER: 
-    case MBUS_CODE::MANUFACTURER: 
+    case MBUS_CODE::FABRICATION_NUMBER:
+    case MBUS_CODE::BUS_ADDRESS:
+    case MBUS_CODE::CREDIT:
+    case MBUS_CODE::DEBIT:
+    case MBUS_CODE::ACCESS_NUMBER:
+    case MBUS_CODE::MANUFACTURER:
     case MBUS_CODE::PARAMETER_SET_ID:
-    case MBUS_CODE::MODEL_VERSION: 
-    case MBUS_CODE::HARDWARE_VERSION: 
-    case MBUS_CODE::FIRMWARE_VERSION: 
-    case MBUS_CODE::SOFTWARE_VERSION: 
-    case MBUS_CODE::CUSTOMER_LOCATION: 
-    case MBUS_CODE::CUSTOMER: 
-    case MBUS_CODE::ERROR_FLAGS: 
-    case MBUS_CODE::ERROR_MASK: 
-    case MBUS_CODE::DIGITAL_OUTPUT: 
-    case MBUS_CODE::DIGITAL_INPUT: 
-    case MBUS_CODE::RESPONSE_DELAY_TIME: 
-    case MBUS_CODE::RETRY:   
-    case MBUS_CODE::SIZE_OF_STORAGE_BLOCK:  
-    case MBUS_CODE::STORAGE_INTERVAL_MONTH: 
-    case MBUS_CODE::GENERIC: 
-    case MBUS_CODE::RESET_COUNTER: 
-    case MBUS_CODE::CUMULATION_COUNTER: 
-    case MBUS_CODE::CUSTOMIZED_VIF: 
-    case MBUS_CODE::MANUFACTURER_SPECIFIC: 
-    case MBUS_CODE::REACTIVE_ENERGY: 
-    case MBUS_CODE::REACTIVE_POWER:  
-    case MBUS_CODE::APPARENT_POWER: 
+    case MBUS_CODE::MODEL_VERSION:
+    case MBUS_CODE::HARDWARE_VERSION:
+    case MBUS_CODE::FIRMWARE_VERSION:
+    case MBUS_CODE::SOFTWARE_VERSION:
+    case MBUS_CODE::CUSTOMER_LOCATION:
+    case MBUS_CODE::CUSTOMER:
+    case MBUS_CODE::ERROR_FLAGS:
+    case MBUS_CODE::ERROR_MASK:
+    case MBUS_CODE::DIGITAL_OUTPUT:
+    case MBUS_CODE::DIGITAL_INPUT:
+    case MBUS_CODE::RESPONSE_DELAY_TIME:
+    case MBUS_CODE::RETRY:
+    case MBUS_CODE::SIZE_OF_STORAGE_BLOCK:
+    case MBUS_CODE::STORAGE_INTERVAL_MONTH:
+    case MBUS_CODE::GENERIC:
+    case MBUS_CODE::RESET_COUNTER:
+    case MBUS_CODE::CUMULATION_COUNTER:
+    case MBUS_CODE::CUSTOMIZED_VIF:
+    case MBUS_CODE::MANUFACTURER_SPECIFIC:
     case MBUS_CODE::PHASE_VOLT_DEG:
-    case MBUS_CODE::PHASE_CURR_DEG: 
-    case MBUS_CODE::SPECIAL_SUPPLIER_INFO:  
-
-// has to be sort
+    case MBUS_CODE::PHASE_CURR_DEG:
+    case MBUS_CODE::SPECIAL_SUPPLIER_INFO:
     case MBUS_CODE::CURRENT_SELECTED_APL:
     case MBUS_CODE::SUB_DEVICES:
     case MBUS_CODE::REMAIN_BAT_LIFE_MONTH:
-    case MBUS_CODE::CARBON_DIOXIDE_PPM:
-    case MBUS_CODE::CARBON_MONOXIDE_PPM:
     case MBUS_CODE::VOLATILE_ORG_COMP_ppb:
-    case MBUS_CODE::VOLATILE_ORG_COMP_UG_M3:
     case MBUS_CODE::PARTICLES_UNSPEC_UG_M3:
     case MBUS_CODE::PARTICLES_UNSPEC_1M3:
-    case MBUS_CODE::PARTICLES_PM1_UG_M3:
-    case MBUS_CODE::PARTICLES_PM1_1M3:    
-    case MBUS_CODE::PARTICLES_PM2_5_UG_M3:
-    case MBUS_CODE::PARTICLES_PM2_5_1M3:    
-    case MBUS_CODE::PARTICLES_PM10_UG_M3:
-    case MBUS_CODE::PARTICLES_PM10_1M3:    
-    case MBUS_CODE::ILLUMINANCE_LUX:
+    case MBUS_CODE::PARTICLES_PM1_1M3:
+    case MBUS_CODE::PARTICLES_PM2_5_1M3:
+    case MBUS_CODE::PARTICLES_PM10_1M3:
     case MBUS_CODE::LUMINOUS_INTENSITY_CD:
-    case MBUS_CODE::RADIANT_FLUX_DENS:
-    case MBUS_CODE::WIND_SPEED_M_S:
     case MBUS_CODE::RAINFALL_L_MM:
     case MBUS_CODE::FORMAZIN_NEPHELOMETER_U:
-    case MBUS_CODE::POTENTIAL_HYDROGEN_PH:
     case MBUS_CODE::DISMOUNTS_COUNTER:
     case MBUS_CODE::TEST_BUTTON_COUNTER:
     case MBUS_CODE::ALARM_COUNTER:
@@ -1327,18 +1363,13 @@ const char * MBusinoLib::getDeviceClass(uint8_t code, uint8_t medium) {
     case MBUS_CODE::SMOKE_CHAMBER_DEFECTS:
     case MBUS_CODE::SELF_TEST_COUNTER:
     case MBUS_CODE::SOUNDER_DEFECT_COUNTER:
-    case MBUS_CODE::DECIBEL_A:
-    case MBUS_CODE::BATTERY_PERCENTAGE:
     case MBUS_CODE::CHAMBER_POLLUTION_LEVEL:
-    case MBUS_CODE::DISTANCE_MM:
-    case MBUS_CODE::MOISTURE_LEVEL_PERCENT:
     case MBUS_CODE::PRESSURE_SENS_STATUS:
     case MBUS_CODE::SMOKE_ALARM_STATUS:
     case MBUS_CODE::CO_ALARM_STATUS:
     case MBUS_CODE::HEAT_ALARM_STATUS:
     case MBUS_CODE::DOOR_WINDOW_SENS_STATUS:
-
-      return "";  
+      return "";
     default:
         break;
 
@@ -1349,50 +1380,23 @@ const char * MBusinoLib::getDeviceClass(uint8_t code, uint8_t medium) {
 const char * MBusinoLib::getStateClass(uint8_t code) {
   switch (code) {
 
-    case MBUS_CODE::AMPERES: 
-    case MBUS_CODE::MASS_KG: 
-    case MBUS_CODE::POWER_W:
-    case MBUS_CODE::MAX_POWER_W: 
-    case MBUS_CODE::POWER_J_H: 
-    case MBUS_CODE::VOLUME_FLOW_M3_H: 
-    case MBUS_CODE::VOLUME_FLOW_M3_MIN:
-    case MBUS_CODE::VOLUME_FLOW_M3_S: 
-    case MBUS_CODE::VOLUME_FLOW_GAL_M: 
-    case MBUS_CODE::VOLUME_FLOW_GAL_H: 
-    case MBUS_CODE::MASS_FLOW_KG_H: 
-    case MBUS_CODE::FLOW_TEMPERATURE_C: 
-    case MBUS_CODE::FLOW_TEMPERATURE_F:
-    case MBUS_CODE::RETURN_TEMPERATURE_C: 
-    case MBUS_CODE::RETURN_TEMPERATURE_F:
-    case MBUS_CODE::EXTERNAL_TEMPERATURE_C: 
-    case MBUS_CODE::EXTERNAL_TEMPERATURE_F:
-    case MBUS_CODE::TEMPERATURE_LIMIT_C:
-    case MBUS_CODE::TEMPERATURE_LIMIT_F:
-    case MBUS_CODE::TEMPERATURE_DIFF_K: 
-    case MBUS_CODE::TEMPERATURE_DIFF_F:
-    case MBUS_CODE::PRESSURE_BAR: 
-    case MBUS_CODE::BAUDRATE_BPS:
-    case MBUS_CODE::VOLTS: 
-    case MBUS_CODE::RELATIVE_HUMIDITY:
-    case MBUS_CODE::PHASE_VOLT_DEG:
-    case MBUS_CODE::PHASE_CURR_DEG:    
-      return "measurement";
-
-    case MBUS_CODE::UNKNOWN_VIF:    
-      return "";  // unknown VIFs should not have a state class
+    // Accumulating consumption meters -> total_increasing.
+    // Home Assistant detects counter resets/roll-overs automatically, so meters
+    // that reset (daily, on swap, ...) keep clean long-term statistics.
     case MBUS_CODE::ENERGY_WH:
-    case MBUS_CODE::ENERGY_J:   
-    case MBUS_CODE::VOLUME_M3: 
+    case MBUS_CODE::ENERGY_J:
+    case MBUS_CODE::VOLUME_M3:
     case MBUS_CODE::VOLUME_FT3:
-    case MBUS_CODE::VOLUME_GAL: 
-    case MBUS_CODE::OPERATING_TIME_S: 
-    case MBUS_CODE::OPERATING_TIME_MIN: 
-    case MBUS_CODE::OPERATING_TIME_H: 
-    case MBUS_CODE::OPERATING_TIME_DAYS: 
-    case MBUS_CODE::ON_TIME_S: 
-    case MBUS_CODE::ON_TIME_MIN: 
-    case MBUS_CODE::ON_TIME_H: 
-    case MBUS_CODE::ON_TIME_DAYS: 
+    case MBUS_CODE::VOLUME_GAL:
+    case MBUS_CODE::REACTIVE_ENERGY:
+    case MBUS_CODE::OPERATING_TIME_S:
+    case MBUS_CODE::OPERATING_TIME_MIN:
+    case MBUS_CODE::OPERATING_TIME_H:
+    case MBUS_CODE::OPERATING_TIME_DAYS:
+    case MBUS_CODE::ON_TIME_S:
+    case MBUS_CODE::ON_TIME_MIN:
+    case MBUS_CODE::ON_TIME_H:
+    case MBUS_CODE::ON_TIME_DAYS:
     case MBUS_CODE::AVG_DURATION_S:
     case MBUS_CODE::AVG_DURATION_MIN:
     case MBUS_CODE::AVG_DURATION_H:
@@ -1401,43 +1405,45 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::ACTUAL_DURATION_MIN:
     case MBUS_CODE::ACTUAL_DURATION_H:
     case MBUS_CODE::ACTUAL_DURATION_DAYS:
-    case MBUS_CODE::TIME_POINT_DATE:
-    case MBUS_CODE::TIME_POINT_DATETIME:
-    case MBUS_CODE::FABRICATION_NUMBER: 
-    case MBUS_CODE::BUS_ADDRESS: 
-    case MBUS_CODE::CREDIT: 
-    case MBUS_CODE::DEBIT: 
-    case MBUS_CODE::ACCESS_NUMBER: 
-    case MBUS_CODE::MANUFACTURER:
-    case MBUS_CODE::PARAMETER_SET_ID: 
-    case MBUS_CODE::MODEL_VERSION: 
-    case MBUS_CODE::HARDWARE_VERSION: 
-    case MBUS_CODE::FIRMWARE_VERSION: 
-    case MBUS_CODE::SOFTWARE_VERSION: 
-    case MBUS_CODE::CUSTOMER_LOCATION: 
-    case MBUS_CODE::CUSTOMER: 
-    case MBUS_CODE::ERROR_FLAGS: 
-    case MBUS_CODE::ERROR_MASK: 
-    case MBUS_CODE::DIGITAL_OUTPUT: 
-    case MBUS_CODE::DIGITAL_INPUT: 
-    case MBUS_CODE::RESPONSE_DELAY_TIME: 
-    case MBUS_CODE::RETRY: 
-    case MBUS_CODE::SIZE_OF_STORAGE_BLOCK: 
-    case MBUS_CODE::STORAGE_INTERVAL_MONTH:  
-    case MBUS_CODE::GENERIC: 
-    case MBUS_CODE::RESET_COUNTER: 
-    case MBUS_CODE::CUMULATION_COUNTER: 
-    case MBUS_CODE::CUSTOMIZED_VIF:
-    case MBUS_CODE::MANUFACTURER_SPECIFIC: 
-    case MBUS_CODE::REACTIVE_ENERGY: 
-    case MBUS_CODE::REACTIVE_POWER:     
-    case MBUS_CODE::FREQUENCY: 
-    case MBUS_CODE::APPARENT_POWER:
+      return "total_increasing";
 
-// has to be sort
-    case MBUS_CODE::CURRENT_SELECTED_APL:
-    case MBUS_CODE::SUB_DEVICES:
-    case MBUS_CODE::REMAIN_BAT_LIFE_MONTH:
+    // Instantaneous measurements -> measurement.
+    case MBUS_CODE::AMPERES:
+    case MBUS_CODE::MASS_KG:
+    case MBUS_CODE::POWER_W:
+    case MBUS_CODE::MAX_POWER_W:
+    case MBUS_CODE::POWER_J_H:
+    case MBUS_CODE::VOLUME_FLOW_M3_H:
+    case MBUS_CODE::VOLUME_FLOW_M3_MIN:
+    case MBUS_CODE::VOLUME_FLOW_M3_S:
+    case MBUS_CODE::VOLUME_FLOW_GAL_M:
+    case MBUS_CODE::VOLUME_FLOW_GAL_H:
+    case MBUS_CODE::MASS_FLOW_KG_H:
+    case MBUS_CODE::FLOW_TEMPERATURE_C:
+    case MBUS_CODE::FLOW_TEMPERATURE_F:
+    case MBUS_CODE::RETURN_TEMPERATURE_C:
+    case MBUS_CODE::RETURN_TEMPERATURE_F:
+    case MBUS_CODE::EXTERNAL_TEMPERATURE_C:
+    case MBUS_CODE::EXTERNAL_TEMPERATURE_F:
+    case MBUS_CODE::TEMPERATURE_LIMIT_C:
+    case MBUS_CODE::TEMPERATURE_LIMIT_F:
+    case MBUS_CODE::TEMPERATURE_DIFF_K:
+    case MBUS_CODE::TEMPERATURE_DIFF_F:
+    case MBUS_CODE::PRESSURE_BAR:
+    case MBUS_CODE::BAUDRATE_BPS:
+    case MBUS_CODE::VOLTS:
+    case MBUS_CODE::RELATIVE_HUMIDITY:
+    case MBUS_CODE::PHASE_VOLT_DEG:
+    case MBUS_CODE::PHASE_CURR_DEG:
+    case MBUS_CODE::FREQUENCY:
+    case MBUS_CODE::APPARENT_POWER:
+    case MBUS_CODE::REACTIVE_POWER:
+    case MBUS_CODE::BATTERY_PERCENTAGE:
+    case MBUS_CODE::MOISTURE_LEVEL_PERCENT:
+    case MBUS_CODE::ILLUMINANCE_LUX:
+    case MBUS_CODE::RADIANT_FLUX_DENS:
+    case MBUS_CODE::WIND_SPEED_M_S:
+    case MBUS_CODE::POTENTIAL_HYDROGEN_PH:
     case MBUS_CODE::CARBON_DIOXIDE_PPM:
     case MBUS_CODE::CARBON_MONOXIDE_PPM:
     case MBUS_CODE::VOLATILE_ORG_COMP_ppb:
@@ -1445,18 +1451,54 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::PARTICLES_UNSPEC_UG_M3:
     case MBUS_CODE::PARTICLES_UNSPEC_1M3:
     case MBUS_CODE::PARTICLES_PM1_UG_M3:
-    case MBUS_CODE::PARTICLES_PM1_1M3:    
+    case MBUS_CODE::PARTICLES_PM1_1M3:
     case MBUS_CODE::PARTICLES_PM2_5_UG_M3:
-    case MBUS_CODE::PARTICLES_PM2_5_1M3:    
+    case MBUS_CODE::PARTICLES_PM2_5_1M3:
     case MBUS_CODE::PARTICLES_PM10_UG_M3:
-    case MBUS_CODE::PARTICLES_PM10_1M3:    
-    case MBUS_CODE::ILLUMINANCE_LUX:
+    case MBUS_CODE::PARTICLES_PM10_1M3:
     case MBUS_CODE::LUMINOUS_INTENSITY_CD:
-    case MBUS_CODE::RADIANT_FLUX_DENS:
-    case MBUS_CODE::WIND_SPEED_M_S:
     case MBUS_CODE::RAINFALL_L_MM:
     case MBUS_CODE::FORMAZIN_NEPHELOMETER_U:
-    case MBUS_CODE::POTENTIAL_HYDROGEN_PH:
+    case MBUS_CODE::DISTANCE_MM:
+    case MBUS_CODE::DECIBEL_A:
+    case MBUS_CODE::CHAMBER_POLLUTION_LEVEL:
+      return "measurement";
+
+    case MBUS_CODE::UNKNOWN_VIF:
+      return "";  // unknown VIFs should not have a state class
+
+    // Metadata / status / counters: unchanged behaviour.
+    case MBUS_CODE::TIME_POINT_DATE:
+    case MBUS_CODE::TIME_POINT_DATETIME:
+    case MBUS_CODE::FABRICATION_NUMBER:
+    case MBUS_CODE::BUS_ADDRESS:
+    case MBUS_CODE::CREDIT:
+    case MBUS_CODE::DEBIT:
+    case MBUS_CODE::ACCESS_NUMBER:
+    case MBUS_CODE::MANUFACTURER:
+    case MBUS_CODE::PARAMETER_SET_ID:
+    case MBUS_CODE::MODEL_VERSION:
+    case MBUS_CODE::HARDWARE_VERSION:
+    case MBUS_CODE::FIRMWARE_VERSION:
+    case MBUS_CODE::SOFTWARE_VERSION:
+    case MBUS_CODE::CUSTOMER_LOCATION:
+    case MBUS_CODE::CUSTOMER:
+    case MBUS_CODE::ERROR_FLAGS:
+    case MBUS_CODE::ERROR_MASK:
+    case MBUS_CODE::DIGITAL_OUTPUT:
+    case MBUS_CODE::DIGITAL_INPUT:
+    case MBUS_CODE::RESPONSE_DELAY_TIME:
+    case MBUS_CODE::RETRY:
+    case MBUS_CODE::SIZE_OF_STORAGE_BLOCK:
+    case MBUS_CODE::STORAGE_INTERVAL_MONTH:
+    case MBUS_CODE::GENERIC:
+    case MBUS_CODE::RESET_COUNTER:
+    case MBUS_CODE::CUMULATION_COUNTER:
+    case MBUS_CODE::CUSTOMIZED_VIF:
+    case MBUS_CODE::MANUFACTURER_SPECIFIC:
+    case MBUS_CODE::CURRENT_SELECTED_APL:
+    case MBUS_CODE::SUB_DEVICES:
+    case MBUS_CODE::REMAIN_BAT_LIFE_MONTH:
     case MBUS_CODE::DISMOUNTS_COUNTER:
     case MBUS_CODE::TEST_BUTTON_COUNTER:
     case MBUS_CODE::ALARM_COUNTER:
@@ -1466,19 +1508,15 @@ const char * MBusinoLib::getStateClass(uint8_t code) {
     case MBUS_CODE::SMOKE_CHAMBER_DEFECTS:
     case MBUS_CODE::SELF_TEST_COUNTER:
     case MBUS_CODE::SOUNDER_DEFECT_COUNTER:
-    case MBUS_CODE::DECIBEL_A:
-    case MBUS_CODE::BATTERY_PERCENTAGE:
-    case MBUS_CODE::CHAMBER_POLLUTION_LEVEL:
-    case MBUS_CODE::DISTANCE_MM:
-    case MBUS_CODE::MOISTURE_LEVEL_PERCENT:
     case MBUS_CODE::PRESSURE_SENS_STATUS:
     case MBUS_CODE::SMOKE_ALARM_STATUS:
     case MBUS_CODE::CO_ALARM_STATUS:
     case MBUS_CODE::HEAT_ALARM_STATUS:
-    case MBUS_CODE::DOOR_WINDOW_SENS_STATUS:  
+    case MBUS_CODE::DOOR_WINDOW_SENS_STATUS:
       return "total";
     default:
         break;
+
   }
   return "";
 }
