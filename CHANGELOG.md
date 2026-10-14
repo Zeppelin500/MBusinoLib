@@ -3,6 +3,28 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.10.0] - 2026-10-14
+
+### Added
+
+- `getDeviceClass()` now takes an optional M-Bus medium (`uint8_t medium = 0xFF`, fully backward compatible). For the cumulative volume codes (`VOLUME_M3`/`FT3`/`GAL`) the medium selects the Home Assistant device_class: water media (`Water`, `Warm Water`, `Hot water`, `Cold water`, `Dual water`) -> `water`, `Gas` -> `gas`, anything else -> `volume` (generic). The medium is the header byte decoded by `decodeHeader()` (`medium_code`).
+- Filled several Home Assistant `device_class` gaps: `illuminance`, `irradiance`, `carbon_dioxide`, `carbon_monoxide`, `volatile_organic_compounds` (µg/m³), `pm1`/`pm25`/`pm10` (µg/m³), `wind_speed`, `ph`, `battery`, `moisture`, `distance`, `sound_pressure`, `apparent_power`, `reactive_power`, `reactive_energy`, `precipitation`.
+
+### Changed
+
+- `state_class`: consumption/accumulating branches (energy, volume, reactive energy, operating/on time, durations, rainfall) now use `total_increasing` instead of `total`. Home Assistant detects counter resets/roll-overs automatically, so meters that reset (daily, on swap, ...) keep clean long-term statistics.
+- `state_class`: instantaneous sensors (illuminance, battery, moisture, gas/particle concentrations, ...) now use `measurement`.
+- `TEMPERATURE_DIFF_K`/`TEMPERATURE_DIFF_F` now map to `temperature_delta` (was `temperature`).
+- `RAINFALL_L_MM` unit output changed from `l/mm²` to `mm` (numerically identical, but accepted by Home Assistant's `precipitation` device class).
+
+### Fixed
+
+- `POWER_J_H` no longer reports `power` (`J/h` is not a valid Home Assistant power unit); it is left without a device_class.
+
+### Notes
+
+- VIF codes without a matching Home Assistant device_class (and metadata/status/counter fields) are left empty; users can build a template sensor if needed.
+
 ## [0.9.20] - 2026-04-28
 
 ### Changed
