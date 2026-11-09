@@ -184,10 +184,14 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
       storageNumber = 1;
     }
     uint8_t difeNumber = 0;
-    uint8_t dife[10] = {0};
+    uint8_t dife[11] = {0}; // one spare slot: the evaluation loop below reads dife[difeNumber+1]
     bool ifDife = ((dif & 0x80) == 0x80); //check if the first bit of DIF marked as "DIFE is following" 
     while(ifDife) {        
         difeNumber ++;
+        if (difeNumber > 9 || index >= size) { // bounds guard: never write past dife[10] / read past the buffer
+            _error = MBUS_ERROR::BUFFER_OVERFLOW;
+            return 0;
+        }
         dife[difeNumber] = buffer[index];
         ifDife = false;
         ifDife = ((buffer[index] & 0x80) == 0x80); //check if after the DIFE another DIFE is following 
@@ -215,14 +219,17 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
     uint8_t vifarray[10] = {0};
     uint8_t vifcounter = 0;
 
-    uint8_t vifes = 0;
     uint8_t customVIFlen = 0;
     char customVIF[20] = {0}; 
         bool ifcustomVIF = false;   
     uint8_t firstVifeExtension = 1; //8.4.5 Codes for Value Information Field Extension (VIFE)
 
     do { // copy the VIF(E)s to an array for later analysys and the variable vif for the devinition 
-      if (index == size) {
+      if (index >= size) {
+        _error = MBUS_ERROR::BUFFER_OVERFLOW;
+        return 0;
+      }
+      if (vifcounter > 9) { // bounds guard: never write past vifarray[10]
         _error = MBUS_ERROR::BUFFER_OVERFLOW;
         return 0;
       }
@@ -230,6 +237,10 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
       vifarray[vifcounter] = buffer[index++];
       
       if((vifarray[0] & 0x7F) == 0x7C && vifcounter == 0){ // Customized ASCII VIF
+        if (index >= size) { // bounds guard: the length byte must be inside the buffer
+          _error = MBUS_ERROR::BUFFER_OVERFLOW;
+          return 0;
+        }
         customVIFlen = buffer[index];// length of ASCII VIF
         if(vifarray[0] == 0xFC){
           index = index + customVIFlen + 1; // SKIPskip the ASCII string to find the vife
@@ -268,7 +279,12 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
       
       char vifBuffer[customVIFlen + 1];// = {0};    
       for (uint8_t i = 0; i<=customVIFlen; i++) { // reeding the ASCII string ...
-        vifBuffer[customVIFlen-i] = buffer[index-vifcounter + 1]; 
+        int readPos = (int)index - (int)vifcounter + 1; // bounds guard: must stay inside the buffer
+        if (readPos < 0 || readPos >= size) {
+          _error = MBUS_ERROR::BUFFER_OVERFLOW;
+          return 0;
+        }
+        vifBuffer[customVIFlen-i] = buffer[readPos]; 
                 index++;
       }  
       strncpy(customVIF, vifBuffer,customVIFlen ); // ... and copy it to our variable
@@ -282,7 +298,6 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
     if (def < 0) {
       _error = MBUS_ERROR::UNSUPPORTED_VIF;
       def = 0; 
-      //return 0; 
     }     
 
     //find VIF extensions like the table 8.4.5 Codes for Value Information Field Extension (VIFE) ---------------------------------------------------------------
@@ -307,6 +322,10 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
       uint8_t extensionsCounter = firstVifeExtension;
 
       do{
+        if (extensionsCounter > 9) { // bounds guard: never read past vifarray[10]
+          _error = MBUS_ERROR::BUFFER_OVERFLOW;
+          return 0;
+        }
         if((vifarray[extensionsCounter] & 0x7F) == 0x7D){ // from table "Codes for Value Information Field Extension" E111 1101 Multiplicative correction factor: 1000
           extensionScaler = 3; // x1000
         }
@@ -331,6 +350,10 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
           noUnit = true;
         }
         else if(vifarray[extensionsCounter] == 0xFC || vifarray[extensionsCounter] == 0xFF){
+          if (extensionsCounter + 1 > 9) { // bounds guard: the phase byte must exist too
+            _error = MBUS_ERROR::BUFFER_OVERFLOW;
+            return 0;
+          }
           uint8_t vifExtensionBuffer = vifarray[extensionsCounter+1] & 0x7F;
           switch(vifExtensionBuffer){  
             case 1:
@@ -480,9 +503,17 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
           LVAR = FBh .. FFh :Reserved
           */
           // only ASCII string supported
+          if (index >= size) { // bounds guard: the LVAR byte itself must be inside the buffer
+            _error = MBUS_ERROR::BUFFER_OVERFLOW;
+            return 0;
+          }
           if(buffer[index] >= 0x00 && buffer[index] <= 0xBF){ //ASCII string with LVAR characters
             len = buffer[index];
             index ++;
+            if (index + len > size) { // bounds guard: the ASCII characters must be inside the buffer
+              _error = MBUS_ERROR::BUFFER_OVERFLOW;
+              return 0;
+            }
             char charBuffer[len + 1]; // = {0};        
             for (uint8_t i = 0; i<=len; i++) { // evtl das "=" löschen
               charBuffer[i] = buffer[index + (len-i-1)]; 
@@ -493,6 +524,10 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
           else if(buffer[index] >= 0xC0 && buffer[index] <= 0xCF){ //positive BCD number with (LVAR - C0h) • 2 digits
             len = buffer[index] - 0xC0;
             index ++;
+            if (index + len > size) { // bounds guard: the value bytes must be inside the buffer
+              _error = MBUS_ERROR::BUFFER_OVERFLOW;
+              return 0;
+            }
             dataCodingType = 2;
             switchAgain = true;
             break;
@@ -500,6 +535,10 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
           else if(buffer[index] >= 0xD0 && buffer[index] <= 0xDF){ //negative BCD number with (LVAR - D0h) • 2 digits
             len = buffer[index] - 0xD0;
             index ++;
+            if (index + len > size) { // bounds guard: the value bytes must be inside the buffer
+              _error = MBUS_ERROR::BUFFER_OVERFLOW;
+              return 0;
+            }
             dataCodingType = 2;
             switchAgain = true;
             negative = true;
@@ -508,6 +547,10 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
           else if(buffer[index] >= 0xE0 && buffer[index] <= 0xEF){ //binary number with (LVAR - E0h) bytes
             len = buffer[index] - 0xE0;
             index ++;            
+            if (index + len > size) { // bounds guard: the value bytes must be inside the buffer
+              _error = MBUS_ERROR::BUFFER_OVERFLOW;
+              return 0;
+            }
             dataCodingType = 1;
             switchAgain = true;
             break;
@@ -515,6 +558,10 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
           else if(buffer[index] >= 0xF0 && buffer[index] <= 0xFA){ //floating point number with (LVAR - F0h) bytes [to bedefined]
             len = buffer[index] - 0xF0;
             index ++;            
+            if (index + len > size) { // bounds guard: the value bytes must be inside the buffer
+              _error = MBUS_ERROR::BUFFER_OVERFLOW;
+              return 0;
+            }
             dataCodingType = 3;
             switchAgain = true;
             break;
@@ -525,14 +572,17 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
           
           break;
         case 6:    //TimePoint Date&Time Typ F
+          if (len < 4) { // bounds guard: date[] follows the DIF length and can be shorter than the 4 bytes read below
+            _error = MBUS_ERROR::BUFFER_OVERFLOW;
+            return 0;
+          }
           for (uint8_t i = 0; i<len; i++) {
             date[i] =  buffer[index + i];
           }                     
           if ((date[0] & 0x80) != 0) {    // Time valid ?
-            //out_len = snprintf(output, output_size, "invalid");
             break;
           }
-          snprintf(datestring, 24, "20%02d%02d%02d%02d%02d",
+          snprintf(datestring, sizeof(datestring), "20%02d%02d%02d%02d%02d",
             ((date[2] & 0xE0) >> 5) | ((date[3] & 0xF0) >> 1), // year
             date[3] & 0x0F, // mon
             date[2] & 0x1F, // mday
@@ -552,12 +602,15 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
           asciiValue = 2;   
           break;
         case 7:    //TimePoint Date Typ G
+          if (len < 2) { // bounds guard: date[] follows the DIF length and can be shorter than the 2 bytes read below
+            _error = MBUS_ERROR::BUFFER_OVERFLOW;
+            return 0;
+          }
           for (uint8_t i = 0; i<len; i++) {
             date[i] =  buffer[index + i];
           }            
         
           if ((date[1] & 0x0F) > 12) {    // Time valid ?
-            //out_len = snprintf(output, output_size, "invalid");
             break;
           }
           snprintf(datestring, 12, "20%02d%02d%02d",
@@ -637,19 +690,11 @@ uint8_t MBusinoLib::decodeRecords(uint8_t *buffer, uint8_t size, JsonArray& root
     if(tariff > 0){
       data["tariff"] = tariff;
     }    
-    /* // only for debug
-    data["difes"] = difeNumber;
-    if(difeNumber > 0){
-      data["dife1"] = dife[1];
-      data["dife2"] = dife[2];
-    }
-    */
-
-    if(buffer[index] == 0x0F && index != size){ // If last byte 0x0F --> Start of manufacturer specific data structures to end of user data --> nothing to decode
+    if(index < size && buffer[index] == 0x0F){ // If last byte 0x0F --> Start of manufacturer specific data structures to end of user data --> nothing to decode
       break;
     }   
 
-    if(buffer[index] == 0x1F && index != size){ // If last byte 0x1F --> More records follow in next telegram
+    if(index < size && buffer[index] == 0x1F){ // If last byte 0x1F --> More records follow in next telegram
       data["telegramFollow"] = 1;
       break;
     }            
