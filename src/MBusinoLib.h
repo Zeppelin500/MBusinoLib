@@ -182,12 +182,13 @@ DOOR_WINDOW_SENS_STATUS,
 
 // Error codes
 enum MBUS_ERROR {
-  NO_ERROR,
-  BUFFER_OVERFLOW,
-  UNSUPPORTED_CODING,
-  UNSUPPORTED_RANGE,
-  UNSUPPORTED_VIF,
-  NEGATIVE_VALUE,
+  NO_ERROR = 0,
+  BUFFER_OVERFLOW = 1,
+  // 2 (UNSUPPORTED_CODING), 3 (UNSUPPORTED_RANGE) and 5 (NEGATIVE_VALUE) are
+  // deliberate gaps: they were leftovers of the removed encoder and are never
+  // set while decoding. The values of the remaining codes are kept explicit
+  // and unchanged so decode output stays identical.
+  UNSUPPORTED_VIF = 4,
 };
 
 // VIF codes
