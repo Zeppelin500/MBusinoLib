@@ -16,6 +16,10 @@ Live test of the [**MBusinoLib Example**](https://wokwi.com/projects/40223505280
 
 A working M-Bus --> MQTT gateway with this library [**MBusino**](https://github.com/Zeppelin500/MBusino)
 
+**Python port:** [**MBusinoLibPy**](https://github.com/Zeppelin500/MBusinoLibPy) - the same decoder as a standard-library-only Python package (`pip install MBusinoLibPy`).
+
+Live decoder in the browser (**Python port and this C++ library side by side**): <https://zeppelin500.github.io/MBusinoLibPy/>
+
 ### Credits
 
 **MBusinoLib** based at the AllWize/mbus-payload library but with much more decode capabilities. mbus-payload's encode capabilities are not supported.
