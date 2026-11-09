@@ -20,14 +20,6 @@ A working M-Bus --> MQTT gateway with this library [**MBusino**](https://github.
 
 Live decoder in the browser (**Python port and this C++ library side by side**): <https://zeppelin500.github.io/MBusinoLibPy/>
 
-### Credits
-
-**MBusinoLib** based at the AllWize/mbus-payload library but with much more decode capabilities. mbus-payload's encode capabilities are not supported.
-
-Thanks to **AllWize!** for the origin library https://github.com/allwize/mbus-payload 
-
-Thanks to **HWHardsoft** and **TrystanLea** for the M-Bus communication for MBusino: https://github.com/HWHardsoft/emonMbus and https://github.com/openenergymonitor/HeatpumpMonitor
-
 ### Class: `MBusinoLib`
 
 Include and instantiate the MBusinoLib class:
@@ -209,6 +201,14 @@ const char* getStateClass(uint8_t code);
 
 * [The M-Bus: A Documentation Rev. 4.8 - Appendix](https://m-bus.com/assets/downloads/MBDOC48.PDF)
 * [Dedicated Application Layer (M-Bus)](https://datasheet.datasheetarchive.com/originals/crawler/m-bus.com/ba82a2f0a320ffda901a2d9814f48c24.pdf) by H. Ziegler
+
+### Credits
+
+**MBusinoLib** based at the AllWize/mbus-payload library but with much more decode capabilities. mbus-payload's encode capabilities are not supported.
+
+Thanks to **AllWize!** for the origin library https://github.com/allwize/mbus-payload 
+
+Thanks to **HWHardsoft** and **TrystanLea** for the M-Bus communication for MBusino: https://github.com/HWHardsoft/emonMbus and https://github.com/openenergymonitor/HeatpumpMonitor
 
 ## License
 
