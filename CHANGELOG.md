@@ -3,6 +3,38 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.0] - 2026-11-09
+
+### Added
+
+- Bounds checks in `decodeRecords()`: every read/write that could run past the
+  buffer now stops and sets `BUFFER_OVERFLOW` instead of reading/writing
+  undefined memory (DIFE/VIF/VIFE loops, custom ASCII VIF, variable-length
+  values, date decoding, trailing markers). Mirrors the Python port.
+
+### Changed
+
+- `MBUS_ERROR` cleanup: removed the unused `UNSUPPORTED_CODING` (2),
+  `UNSUPPORTED_RANGE` (3) and `NEGATIVE_VALUE` (5) members (leftovers of the
+  removed AllWize encoder). The remaining values are kept explicit -
+  `NO_ERROR = 0`, `BUFFER_OVERFLOW = 1`, `UNSUPPORTED_VIF = 4` - so existing
+  decoding output is unchanged.
+- README: the address key is documented as `address` (was `a_field`); the
+  example uses it too.
+
+### Fixed
+
+- `snprintf(datestring, sizeof(datestring), ...)`: the size argument was 24
+  for a 16-byte buffer, which aborted any build with `_FORTIFY_SOURCE` (e.g.
+  the host test harness).
+
+### Removed
+
+- `test/aunit/` - the original AllWize AUnit test file (referenced the removed
+  encoder API, carried an LGPL header in a GPL-3.0 repo and no longer compiled).
+- Dead leftovers in `MBusinoLib.cpp` (unused `vifes`, commented-out fragments,
+  a debug block).
+
 ## [0.10.0] - 2026-10-14
 
 ### Added
